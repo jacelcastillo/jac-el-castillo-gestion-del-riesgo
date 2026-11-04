@@ -1,0 +1,92 @@
+import type { MapPoint, MapPointKindDefinition } from '@/types/content'
+
+export const mapPointKinds: MapPointKindDefinition[] = [
+  {
+    id: 'encuentro',
+    label: 'Puntos de encuentro',
+    description: 'Lugares seguros y abiertos donde nos reunimos en una emergencia.',
+    icon: 'flag',
+  },
+  {
+    id: 'ruta',
+    label: 'Rutas de evacuación',
+    description: 'Caminos recomendados para llegar a los puntos de encuentro.',
+    icon: 'route',
+  },
+  {
+    id: 'riesgo',
+    label: 'Zonas de riesgo',
+    description: 'Lugares donde hay que tener más cuidado o evitar en una emergencia.',
+    icon: 'alert',
+  },
+]
+
+export const mapPoints: MapPoint[] = [
+  {
+    id: 'pe-cancha',
+    kind: 'encuentro',
+    name: 'Cancha Múltiple',
+    description: 'Punto de encuentro principal. Espacio amplio, lejos de cables y árboles.',
+    reference: 'Detrás del Salón Comunal',
+    position: { x: 48, y: 30 },
+  },
+  {
+    id: 'pe-parque',
+    kind: 'encuentro',
+    name: 'Parque El Mirador',
+    description: 'Punto de encuentro para los sectores La Loma y El Centro.',
+    reference: 'Parte alta, junto a la iglesia',
+    position: { x: 76, y: 18 },
+  },
+  {
+    id: 'ruta-quebrada',
+    kind: 'ruta',
+    name: 'Ruta La Quebrada → Cancha',
+    description: 'Subir por la Calle 3 hasta la cancha. Evitar el puente en lluvias fuertes.',
+    reference: 'Calle 3, escaleras de la tienda',
+    position: { x: 30, y: 62 },
+    path: [
+      { x: 22, y: 80 },
+      { x: 30, y: 62 },
+      { x: 40, y: 45 },
+      { x: 48, y: 30 },
+    ],
+  },
+  {
+    id: 'ruta-centro',
+    kind: 'ruta',
+    name: 'Ruta El Centro → Parque El Mirador',
+    description: 'Tomar la Carrera 5 en subida hasta el parque.',
+    reference: 'Carrera 5, frente a la droguería',
+    position: { x: 66, y: 44 },
+    path: [
+      { x: 58, y: 68 },
+      { x: 66, y: 44 },
+      { x: 76, y: 18 },
+    ],
+  },
+  {
+    id: 'zr-quebrada',
+    kind: 'riesgo',
+    name: 'Orilla de la quebrada',
+    description: 'Riesgo de inundación y creciente súbita en temporada de lluvias.',
+    reference: 'Sector La Quebrada, bajo el puente',
+    position: { x: 16, y: 86 },
+  },
+  {
+    id: 'zr-talud',
+    kind: 'riesgo',
+    name: 'Talud de la vía principal',
+    description: 'Riesgo de deslizamiento. No transitar a pie durante lluvias fuertes.',
+    reference: 'Curva de la vía, sector La Loma',
+    position: { x: 86, y: 52 },
+  },
+  {
+    id: 'zr-transformador',
+    kind: 'riesgo',
+    name: 'Transformador eléctrico',
+    description: 'Riesgo eléctrico. No acercarse si hay cables caídos o chispas.',
+    reference: 'Esquina de la Calle 4 con Carrera 2',
+    position: { x: 36, y: 20 },
+  },
+]

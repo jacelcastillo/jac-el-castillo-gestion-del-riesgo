@@ -1,0 +1,121 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-caution: var(--caution);
+  --color-caution-foreground: var(--caution-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Paleta: azul institucional (primary), naranja para alertas (warning),
+ * rojo solo para emergencias (destructive), verde "estás preparado" (success)
+ * y amarillo para el nivel de alerta amarilla (caution).
+ */
+:root {
+  color-scheme: light;
+  --background: oklch(0.985 0.004 250);
+  --foreground: oklch(0.22 0.03 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0.03 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.22 0.03 255);
+  --primary: oklch(0.43 0.15 258);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.95 0.02 250);
+  --secondary-foreground: oklch(0.3 0.08 258);
+  --muted: oklch(0.955 0.008 250);
+  --muted-foreground: oklch(0.45 0.025 255);
+  --accent: oklch(0.94 0.03 250);
+  --accent-foreground: oklch(0.3 0.1 258);
+  --destructive: oklch(0.53 0.21 27);
+  --destructive-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.72 0.17 55);
+  --warning-foreground: oklch(0.22 0.05 50);
+  --success: oklch(0.52 0.13 150);
+  --success-foreground: oklch(0.99 0 0);
+  --caution: oklch(0.88 0.16 95);
+  --caution-foreground: oklch(0.25 0.05 80);
+  --border: oklch(0.89 0.012 250);
+  --input: oklch(0.8 0.02 250);
+  --ring: oklch(0.55 0.17 258);
+  --radius: 0.75rem;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.17 0.02 258);
+  --foreground: oklch(0.96 0.005 250);
+  --card: oklch(0.22 0.025 258);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.22 0.025 258);
+  --popover-foreground: oklch(0.96 0.005 250);
+  --primary: oklch(0.74 0.13 252);
+  --primary-foreground: oklch(0.17 0.03 258);
+  --secondary: oklch(0.28 0.03 258);
+  --secondary-foreground: oklch(0.94 0.01 250);
+  --muted: oklch(0.26 0.02 258);
+  --muted-foreground: oklch(0.76 0.02 250);
+  --accent: oklch(0.3 0.04 258);
+  --accent-foreground: oklch(0.96 0.005 250);
+  --destructive: oklch(0.64 0.2 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.76 0.16 58);
+  --warning-foreground: oklch(0.2 0.05 50);
+  --success: oklch(0.7 0.14 152);
+  --success-foreground: oklch(0.17 0.03 150);
+  --caution: oklch(0.86 0.15 95);
+  --caution-foreground: oklch(0.22 0.05 80);
+  --border: oklch(0.34 0.025 258);
+  --input: oklch(0.42 0.03 258);
+  --ring: oklch(0.74 0.13 252);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-foreground text-base leading-relaxed;
+  }
+  :focus-visible {
+    @apply outline-3 outline-offset-2 outline-ring;
+  }
+}

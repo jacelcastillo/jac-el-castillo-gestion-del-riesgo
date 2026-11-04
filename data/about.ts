@@ -1,0 +1,54 @@
+import type { AboutContent } from '@/types/content'
+
+export const aboutContent: AboutContent = {
+  mission:
+    'Promover la participación de los vecinos de El Castillo para conocer nuestros riesgos, prevenir emergencias y responder de manera organizada y solidaria.',
+  vision:
+    'Ser un barrio preparado, donde cada familia sabe qué hacer y todos nos cuidamos entre todos.',
+  committee: {
+    title: 'Comité de Gestión del Riesgo',
+    description:
+      'Vecinos voluntarios que coordinan la prevención, los simulacros y la respuesta ante emergencias junto con las autoridades.',
+    members: [
+      { id: 'coordinacion', name: 'Coordinación general', role: 'Enlace con la Alcaldía y el Consejo Municipal' },
+      { id: 'prevencion', name: 'Prevención y educación', role: 'Talleres, campañas y simulacros' },
+      { id: 'primeros-auxilios', name: 'Primeros auxilios', role: 'Atención inicial y botiquines comunitarios' },
+      { id: 'evacuacion', name: 'Evacuación y puntos de encuentro', role: 'Rutas, señalización y conteo de personas' },
+      { id: 'comunicaciones', name: 'Comunicaciones', role: 'Avisos, alertas y este sitio web' },
+    ],
+  },
+  participate: {
+    title: 'Cómo participar',
+    description: 'Todos podemos aportar, sin importar la edad. Así puedes sumarte:',
+    ways: [
+      {
+        id: 'voluntario',
+        title: 'Hazte voluntario',
+        description: 'Únete a una de las comisiones del comité. Te capacitamos.',
+        icon: 'handHeart',
+      },
+      {
+        id: 'asamblea',
+        title: 'Asiste a las reuniones',
+        description: 'Participa en las asambleas de la JAC y propone mejoras para el barrio.',
+        icon: 'users',
+      },
+      {
+        id: 'simulacros',
+        title: 'Participa en simulacros',
+        description: 'Practicar salva vidas. Ven con tu familia.',
+        icon: 'siren',
+      },
+      {
+        id: 'reporta',
+        title: 'Reporta lo que veas',
+        description: 'Grietas, cables caídos o basura en la quebrada. Tu reporte ayuda a prevenir.',
+        icon: 'megaphone',
+      },
+    ],
+  },
+  meeting: {
+    title: 'Reuniones del comité',
+    detail: 'Primer sábado de cada mes, 4:00 p. m., Salón Comunal El Castillo.',
+  },
+}
