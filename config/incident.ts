@@ -63,8 +63,11 @@ export const reportSteps: ReportStepDefinition[] = [
   { id: 'detalles', title: 'Cuéntanos más', description: 'Entre más claro, mejor podemos ayudar.', fields: ['description', 'severity', 'peopleAffected'] },
   { id: 'foto', title: 'Agrega una foto', description: 'Es opcional. Solo si es seguro tomarla.', fields: ['photo'] },
   { id: 'contacto', title: 'Tus datos de contacto', description: 'Son opcionales. Puedes enviar de forma anónima.', fields: ['contact'] },
-  { id: 'resumen', title: 'Confirma y envía', description: 'Revisa que todo esté bien.', fields: [] },
+  { id: 'resumen', title: 'Confirma y envía', description: 'Revisa que todo esté bien.', fields: ['consent'] },
 ]
+
+/** The photo step ships in slice 5. */
+export const activeReportSteps = reportSteps.filter((step) => step.id !== 'foto')
 
 export const validationMessages = {
   typeRequired: 'Elige el tipo de incidente.',
@@ -75,6 +78,7 @@ export const validationMessages = {
   severityRequired: 'Elige qué tan grave es.',
   peopleRequired: 'Dinos si hay personas afectadas.',
   nameRequired: 'Escribe tu nombre o marca "Enviar de forma anónima".',
+  consentRequired: 'Para enviar el reporte debes autorizar el tratamiento de tus datos.',
   phoneInvalid: 'Escribe un celular válido de 10 números (ej: 3001234567).',
 } as const
 

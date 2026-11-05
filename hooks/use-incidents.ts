@@ -1,20 +1,43 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState, useSyncExternalStore } from 'react'
 import { getIncidentService } from '@/lib/services'
-import type { IncidentReport } from '@/types/incident'
+import type { IncidentDraft, IncidentReport } from '@/types/incident'
 
-/** Lee los reportes del dispositivo y se actualiza cuando el servicio cambia. */
+interface Snapshot {
+  reports: IncidentReport[]
+  loaded: boolean
+}
+
+const EMPTY: Snapshot = { reports: [], loaded: false }
+let snapshot = EMPTY
+
+function subscribe(onChange: () => void) {
+  const service = getIncidentService()
+  const refresh = async () => {
+    snapshot = { reports: await service.list(), loaded: true }
+    onChange()
+  }
+  const syncAndRefresh = () => void service.syncPending().then(refresh)
+  const unsubscribe = service.subscribe(() => void refresh())
+  window.addEventListener('online', syncAndRefresh)
+  void refresh()
+  syncAndRefresh()
+  return () => {
+    unsubscribe()
+    window.removeEventListener('online', syncAndRefresh)
+  }
+}
+
+/** Guarda un reporte en el dispositivo y lo envía de una vez si hay conexión. */
+export function useCreateIncident() {
+  return useCallback((draft: IncidentDraft) => getIncidentService().create(draft), [])
+}
+
+/** Lee los reportes del dispositivo; reintenta los pendientes al abrir y al volver la conexión. */
 export function useIncidents() {
-  const [reports, setReports] = useState<IncidentReport[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { reports, loaded } = useSyncExternalStore(subscribe, () => snapshot, () => EMPTY)
   const [isSyncing, setIsSyncing] = useState(false)
-
-  const reload = useCallback(async () => {
-    const list = await getIncidentService().list()
-    setReports(list)
-    setIsLoading(false)
-  }, [])
 
   const sync = useCallback(async () => {
     setIsSyncing(true)
@@ -22,20 +45,12 @@ export function useIncidents() {
       const service = getIncidentService()
       await service.syncPending()
       await service.refreshStatuses()
-      await reload()
     } finally {
       setIsSyncing(false)
     }
-  }, [reload])
-
-  useEffect(() => {
-    const unsubscribe = getIncidentService().subscribe(reload)
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial sync of device reports
-    void sync()
-    return unsubscribe
-  }, [reload, sync])
+  }, [])
 
   const pendingCount = reports.filter((report) => report.status === 'pendiente').length
 
-  return { reports, isLoading, isSyncing, pendingCount, sync }
+  return { reports, isLoading: !loaded, isSyncing, pendingCount, sync }
 }

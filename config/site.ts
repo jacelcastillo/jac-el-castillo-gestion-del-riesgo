@@ -19,6 +19,7 @@ const learnMatch = ['/riesgos', '/preparate']
 export const bottomNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
   { href: '/aprende', label: 'Aprende', icon: 'book', match: learnMatch },
+  { href: '/reportar', label: 'Reportar', icon: 'siren', highlight: true },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
 
@@ -28,6 +29,7 @@ export const mainNavigation: NavItem[] = [
   { href: '/aprende', label: 'Aprende', icon: 'book', match: learnMatch },
   { href: '/avisos', label: 'Avisos', icon: 'megaphone' },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
+  { href: '/reportar', label: 'Reportar', icon: 'siren', highlight: true },
 ]
 
 export const pageCopy = {
@@ -75,5 +77,9 @@ export const pageCopy = {
   myReports: {
     title: 'Mis reportes',
     intro: 'Los reportes que has hecho desde este celular y en qué van.',
+  },
+  privacy: {
+    title: 'Aviso de privacidad',
+    intro: 'Cómo cuidamos los datos que nos compartes al hacer un reporte.',
   },
 } satisfies Record<string, PageCopy>

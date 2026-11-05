@@ -1,6 +1,6 @@
-import type { IncidentRepository } from '@/lib/repositories/incident-repository'
-import type { IncidentDraft, IncidentReport } from '@/types/incident'
-import type { IncidentApi } from './incident-api'
+import type { IncidentRepository } from '../repositories/incident-repository.ts'
+import type { IncidentDraft, IncidentReport } from '../../types/incident.ts'
+import type { IncidentApi } from './incident-api.ts'
 
 export interface IncidentService {
   /** Guarda localmente y, si hay conexión, intenta enviarlo de una vez. */
@@ -13,7 +13,8 @@ export interface IncidentService {
   subscribe(listener: () => void): () => void
 }
 
-const isOnline = () => typeof navigator === 'undefined' || navigator.onLine
+// Node 21+ defines a global navigator without onLine.
+const isOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false
 
 export function createIncidentService(
   repository: IncidentRepository,
@@ -22,8 +23,11 @@ export function createIncidentService(
   const listeners = new Set<() => void>()
   const notify = () => listeners.forEach((listener) => listener())
   let syncing: Promise<number> | null = null
+  const inFlight = new Set<string>()
 
   async function trySubmit(report: IncidentReport): Promise<IncidentReport> {
+    if (inFlight.has(report.id)) return report
+    inFlight.add(report.id)
     try {
       const result = await api.submit(report)
       return (
@@ -38,6 +42,8 @@ export function createIncidentService(
         lastSyncError: error instanceof Error ? error.message : String(error),
       })
       return report
+    } finally {
+      inFlight.delete(report.id)
     }
   }
 

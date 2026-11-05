@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { uiCopy } from '@/config/ui-copy'
 import type { AlertStatus, Contact, PageCopy } from '@/types/content'
 import { AlertBanner } from '@/components/organisms/alert-banner'
+import { ReportCta } from '@/components/organisms/report-cta'
 import { CallLink } from '@/components/atoms/call-link'
 import { LifeRiskBanner } from '@/components/molecules/life-risk-banner'
 
@@ -21,6 +22,7 @@ export function LandingHero({ copy, alert, phones }: LandingHeroProps) {
       <div className="grid gap-4 lg:grid-cols-2">
         <AlertBanner alert={alert} />
         <div className="flex flex-col gap-3">
+          <ReportCta />
           <LifeRiskBanner />
           {phones.length > 0 && (
             <div className="hidden flex-1 flex-col justify-between gap-2 rounded-2xl border border-border bg-card p-4 lg:flex">

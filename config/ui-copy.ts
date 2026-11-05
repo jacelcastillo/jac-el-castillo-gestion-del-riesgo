@@ -124,6 +124,13 @@ export const uiCopy = {
     successOnline: 'Tu reporte fue enviado al comité de gestión del riesgo.',
     successOffline:
       'No hay conexión. Guardamos tu reporte y lo enviaremos automáticamente cuando vuelva el internet.',
+    myReportsLink: 'Mis reportes',
+    submitError: 'No pudimos guardar tu reporte en este celular. Intenta de nuevo.',
+    characters: (used: number, max: number) => `${used} de ${max} letras`,
+    opensInNewTab: '(se abre en una pestaña nueva)',
+    stepsLabel: 'Pasos del reporte',
+    consentLabel: 'Autorizo que la JAC use mis datos para atender este reporte.',
+    consentPrivacy: 'Leer el aviso de privacidad',
     goToMyReports: 'Ver mis reportes',
     newReport: 'Hacer otro reporte',
     summaryLabels: {
@@ -155,6 +162,7 @@ export const uiCopy = {
     timeout: 'La búsqueda tardó demasiado. Intenta de nuevo o escribe la dirección.',
   },
   footer: {
+    privacy: 'Privacidad',
     rights: 'Junta de Acción Comunal El Castillo',
     mainSite: 'Sitio de la JAC',
     disclaimer:

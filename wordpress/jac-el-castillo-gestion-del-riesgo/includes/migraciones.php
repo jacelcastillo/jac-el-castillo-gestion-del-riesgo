@@ -13,6 +13,10 @@ function gr_migrar(): void {
         gr_migrar_0_1_0();
     }
 
+    if (version_compare($guardada, '0.2.0', '<')) {
+        gr_migrar_0_2_0();
+    }
+
     update_option('gr_version', GR_VERSION);
 }
 
@@ -23,5 +27,18 @@ function gr_migrar_0_1_0(): void {
 
     if (!get_role('gr_app')) {
         add_role('gr_app', 'App Gestión del Riesgo', ['read' => true]);
+    }
+}
+
+function gr_migrar_0_2_0(): void {
+    get_role('gr_app')?->add_cap('gr_enviar_reportes');
+
+    add_role('gr_comite', 'Comité de gestión del riesgo', ['read' => true]);
+    foreach (GR_CAPS_COMITE as $cap) {
+        get_role('gr_comite')?->add_cap($cap);
+    }
+
+    foreach (GR_CAPS_ADMIN as $cap) {
+        get_role('administrator')?->add_cap($cap);
     }
 }

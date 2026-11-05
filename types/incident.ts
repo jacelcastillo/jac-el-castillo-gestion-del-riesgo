@@ -48,6 +48,7 @@ export interface IncidentDraft {
   peopleAffected: PeopleAffected
   photo?: IncidentPhoto
   contact: IncidentContact
+  consent: boolean
 }
 
 /** Reporte persistido (local o remoto). */

@@ -11,6 +11,8 @@ if (!base) {
 }
 
 const sitioNuevo = 'https://web.jacelcastillo.com.co'
+const usuarioApp = 'app-gestion-riesgo'
+const mailpit = 'http://localhost:8025/api/v1'
 
 const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 let fallos = 0
@@ -79,6 +81,13 @@ if (prod) await revisarProduccion()
 else await revisarLocal()
 
 async function revisarProduccion() {
+  const { res: sinCredenciales } = await pedir('/wp-json/jac-gr/v1/reportes', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: '{}',
+  })
+  check('POST /reportes sin credenciales: 401', sinCredenciales.status === 401, String(sinCredenciales.status))
+
   const avisos = Array.isArray(data.avisos) ? data.avisos : []
   if (avisos.length === 0) {
     console.log('SKIP no hay avisos: no se prueba la redirección ni el feed')
@@ -176,6 +185,8 @@ async function revisarLocal() {
   const { texto: porRest } = await pedir(`/wp-json/wp/v2/posts?categories=${idCategoria.out}`)
   check('REST /wp/v2/posts sigue devolviendo la entrada de riesgo', idCategoria.ok && porRest.includes(riesgo?.titulo ?? '\0'), idCategoria.out || idCategoria.err)
 
+  await revisarReportes()
+
   const migracion = wp('option', 'delete', 'gr_version')
   const categorias = wp('eval', 'echo count(get_terms(["taxonomy" => "category", "slug" => "gestion-del-riesgo", "hide_empty" => false]));')
   check('migración: la categoría existe una sola vez tras borrar gr_version', migracion.ok && categorias.out.endsWith('1'), categorias.out || categorias.err)
@@ -184,8 +195,25 @@ async function revisarLocal() {
 
   const roles = wp('role', 'list', '--fields=role', '--format=json')
   check('rol gr_app existe', roles.ok && roles.out.includes('"gr_app"'), roles.out || roles.err)
-  const caps = wp('eval', 'echo json_encode(array_keys(array_filter(get_role("gr_app")->capabilities)));')
-  check('rol gr_app solo tiene read', caps.out.endsWith('["read"]'), caps.out || caps.err)
+
+  wp('eval', 'get_role("gr_app")->remove_cap("gr_enviar_reportes"); remove_role("gr_comite"); get_role("administrator")->remove_cap("edit_gr_reportes");')
+  wp('option', 'update', 'gr_version', '0.1.1')
+  const roles02 = wp(
+    'eval',
+    'echo json_encode(["app" => array_keys(array_filter(get_role("gr_app")->capabilities)), "comite" => array_keys(array_filter(get_role("gr_comite")->capabilities ?? [])), "admin" => get_role("administrator")->has_cap("edit_gr_reportes")]);',
+  )
+  let rolesJson = {}
+  try {
+    rolesJson = JSON.parse(roles02.out.split('\n').pop() ?? '')
+  } catch {}
+  check('migración 0.2.0: gr_app tiene exactamente read y gr_enviar_reportes', JSON.stringify([...(rolesJson.app ?? [])].sort()) === JSON.stringify(['gr_enviar_reportes', 'read']), roles02.out || roles02.err)
+  const capsComite = rolesJson.comite ?? []
+  check(
+    'migración 0.2.0: gr_comite existe, solo lee y edita reportes, sin borrar',
+    capsComite.includes('read') && capsComite.includes('edit_gr_reportes') && !capsComite.some((c) => c.startsWith('delete_') || c === 'publish_gr_reportes'),
+    roles02.out || roles02.err,
+  )
+  check('migración 0.2.0: administrator recupera las capacidades de reportes', rolesJson.admin === true, roles02.out || roles02.err)
 
   const visibles = wp('post', 'list', '--category_name=gestion-del-riesgo', '--post_status=publish', '--format=count')
   check('WP-CLI sigue viendo las entradas de riesgo', visibles.ok && Number(visibles.out) > 0, visibles.out || visibles.err)
@@ -194,4 +222,121 @@ async function revisarLocal() {
 
   console.log(`${fallos ? 'FAIL' : 'OK'} ${fallos} fallos`)
   process.exit(fallos ? 1 : 0)
+}
+
+function json(cuerpo) {
+  return JSON.stringify(cuerpo)
+}
+
+function uuid() {
+  return crypto.randomUUID()
+}
+
+function reporteValido(id, cambios = {}) {
+  return {
+    id,
+    createdAt: new Date().toISOString(),
+    type: 'deslizamiento',
+    location: { mode: 'gps', latitude: 4.6, longitude: -74.08, accuracy: 12, address: 'Calle 1 con carrera 2' },
+    description: 'Se cayó una parte del talud sobre el camino.',
+    severity: 'alta',
+    peopleAffected: 'no_se',
+    contact: { anonymous: false, name: 'Maria Prueba', phone: '3001234567' },
+    consent: true,
+    ...cambios,
+  }
+}
+
+function idsPorCliente(idCliente) {
+  const r = wp('post', 'list', '--post_type=gr_reporte', '--post_status=any', '--meta_key=gr_id_cliente', `--meta_value=${idCliente}`, '--field=ID')
+  return r.out === '' ? [] : r.out.split('\n')
+}
+
+async function revisarReportes() {
+  const previas = wp('user', 'application-password', 'list', usuarioApp, '--format=json')
+  try {
+    for (const p of JSON.parse(previas.out)) {
+      if (p.name === 'check-wp') wp('user', 'application-password', 'delete', usuarioApp, p.uuid)
+    }
+  } catch {}
+  const clave = wp('user', 'application-password', 'create', usuarioApp, 'check-wp', '--porcelain')
+  check('contraseña de aplicación temporal creada', clave.ok && clave.out !== '', clave.err)
+  const autorizacion = `Basic ${Buffer.from(`${usuarioApp}:${clave.out}`).toString('base64')}`
+
+  const enviar = (ruta, cuerpo, { ip, auth = true } = {}) =>
+    fetch(`${base}/wp-json/jac-gr/v1${ruta}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(auth ? { authorization: autorizacion } : {}), ...(ip ? { 'x-gr-ip': ip } : {}) },
+      body: json(cuerpo),
+    }).then(async (res) => ({ status: res.status, cuerpo: await res.json().catch(() => null) }))
+
+  const creados = []
+  try {
+    wp('transient', 'delete', '--all')
+    await fetch(`${mailpit}/messages`, { method: 'DELETE' }).catch(() => {})
+
+    const sinAuth = await enviar('/reportes', reporteValido(uuid()), { auth: false, ip: '10.0.1.1' })
+    check('POST /reportes sin credenciales: 401', sinAuth.status === 401, String(sinAuth.status))
+
+    const id = uuid()
+    creados.push(id)
+    const primero = await enviar('/reportes', reporteValido(id), { ip: '10.0.1.1' })
+    check('reporte válido: 201 y estado recibido', primero.status === 201 && primero.cuerpo?.id === id && primero.cuerpo?.estado === 'recibido', json(primero))
+
+    const mensajes = await fetch(`${mailpit}/messages`).then((r) => r.json()).catch(() => ({ messages: [] }))
+    check('Mailpit tiene exactamente 1 correo', mensajes.messages?.length === 1, String(mensajes.messages?.length))
+    const detalle = mensajes.messages?.[0] ? await fetch(`${mailpit}/message/${mensajes.messages[0].ID}`).then((r) => r.json()).catch(() => ({})) : {}
+    const textoCorreo = `${detalle.Subject ?? ''}\n${detalle.Text ?? ''}`
+    check('correo: asunto con tipo y gravedad', (detalle.Subject ?? '') === '[Gestión del riesgo] Nuevo reporte: Deslizamiento, gravedad alta', detalle.Subject ?? '')
+    check('correo: sin nombre ni teléfono del reportante', textoCorreo.length > 20 && !textoCorreo.includes('Maria Prueba') && !textoCorreo.includes('3001234567'))
+    check('correo: enlace al reporte en wp-admin', /Ver el reporte: \S*\/wp-admin\/post\.php\?post=\d+&action=edit/.test(textoCorreo), textoCorreo.split('\n').at(-1) ?? '')
+
+    const repetido = await enviar('/reportes', reporteValido(id), { ip: '10.0.1.1' })
+    check('mismo id: 200 sin duplicar', repetido.status === 200 && repetido.cuerpo?.estado === 'recibido' && idsPorCliente(id).length === 1, json(repetido))
+
+    const tipoMalo = await enviar('/reportes', reporteValido(uuid(), { type: 'terremoto' }), { ip: '10.0.3.3' })
+    check('tipo inválido: 400', tipoMalo.status === 400 && tipoMalo.cuerpo?.code === 'rest_invalid_param', json(tipoMalo))
+    const sinConsentimiento = await enviar('/reportes', reporteValido(uuid(), { consent: false }), { ip: '10.0.3.3' })
+    check('consent false: 400', sinConsentimiento.status === 400, json(sinConsentimiento))
+
+    const idAnonimo = uuid()
+    creados.push(idAnonimo)
+    const anonimo = await enviar('/reportes', reporteValido(idAnonimo, { contact: { anonymous: true, name: 'Pedro Oculto', phone: '3109998888' } }), { ip: '10.0.2.2' })
+    check('reporte anónimo: 201', anonimo.status === 201, json(anonimo))
+    const idPost = idsPorCliente(idAnonimo)[0]
+    const metas = wp('post', 'meta', 'list', idPost ?? '0', '--format=json')
+    check('anónimo: no guarda nombre ni teléfono', metas.ok && !/Pedro|3109998888/.test(metas.out), metas.out || metas.err)
+
+    const estados = await enviar('/reportes/estado', { ids: [id, uuid()] }, { ip: '10.0.1.1' })
+    check(
+      '/reportes/estado devuelve recibido y omite el id desconocido',
+      estados.status === 200 && Array.isArray(estados.cuerpo) && estados.cuerpo.length === 1 && estados.cuerpo[0].id === id && estados.cuerpo[0].estado === 'recibido' && !Number.isNaN(Date.parse(estados.cuerpo[0].actualizado)),
+      json(estados),
+    )
+    const demasiados = await enviar('/reportes/estado', { ids: Array.from({ length: 51 }, uuid) }, { ip: '10.0.1.1' })
+    check('/reportes/estado con 51 ids: 400', demasiados.status === 400, json(demasiados))
+
+    const { res: privado } = await pedir('/wp-json/wp/v2/gr_reporte')
+    check('/wp/v2/gr_reporte: 404', privado.status === 404, String(privado.status))
+
+    wp('transient', 'delete', '--all')
+    const estadosLimite = []
+    for (let i = 0; i < 6; i++) {
+      const nuevo = uuid()
+      creados.push(nuevo)
+      estadosLimite.push((await enviar('/reportes', reporteValido(nuevo), { ip: '10.0.9.9' })).status)
+    }
+    const sexto = await enviar('/reportes', reporteValido(uuid()), { ip: '10.0.9.9' })
+    check('5 reportes nuevos de una IP: 201', estadosLimite.slice(0, 5).every((c) => c === 201), estadosLimite.join(','))
+    check('el 6.º reporte nuevo de la misma IP: 429 gr_limite', estadosLimite[5] === 429 && sexto.status === 429 && sexto.cuerpo?.code === 'gr_limite', `${estadosLimite[5]} ${json(sexto)}`)
+  } finally {
+    const todos = creados.flatMap(idsPorCliente)
+    if (todos.length) wp('post', 'delete', ...todos, '--force')
+    const listadas = wp('user', 'application-password', 'list', usuarioApp, '--format=json')
+    try {
+      for (const p of JSON.parse(listadas.out)) {
+        if (p.name === 'check-wp') wp('user', 'application-password', 'delete', usuarioApp, p.uuid)
+      }
+    } catch {}
+  }
 }

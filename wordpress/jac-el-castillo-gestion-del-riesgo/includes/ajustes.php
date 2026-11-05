@@ -20,6 +20,20 @@ function gr_registrar_ajustes(): void {
         'default' => GR_URL_SITIO_NUEVO_DEFECTO,
         'show_in_rest' => false,
     ]);
+    register_setting('gr_ajustes', 'gr_correo_avisos', [
+        'type' => 'string',
+        'sanitize_callback' => 'gr_sanear_correo',
+        'default' => '',
+        'show_in_rest' => false,
+    ]);
+}
+
+function gr_sanear_correo(mixed $entrada): string {
+    return is_string($entrada) ? sanitize_email(trim($entrada)) : '';
+}
+
+function gr_correo_avisos(): string {
+    return gr_sanear_correo(get_option('gr_correo_avisos', ''));
 }
 
 function gr_sanear_url_sitio_nuevo(mixed $entrada): string {
@@ -102,6 +116,13 @@ function gr_pintar_ajustes(): void {
                     <td>
                         <input type="url" id="gr_url_sitio_nuevo" name="gr_url_sitio_nuevo" class="regular-text" placeholder="<?php echo esc_attr(GR_URL_SITIO_NUEVO_DEFECTO); ?>" value="<?php echo esc_attr(gr_url_sitio_nuevo()); ?>">
                         <p class="description">Las entradas de la categoría Gestión del riesgo no se ven en este sitio: quien las abre aquí llega a esta dirección. Debe empezar por https://.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gr_correo_avisos">Correo para avisos de reportes</label></th>
+                    <td>
+                        <input type="email" id="gr_correo_avisos" name="gr_correo_avisos" class="regular-text" value="<?php echo esc_attr(gr_correo_avisos()); ?>">
+                        <p class="description">Recibe un correo por cada reporte nuevo, sin el nombre ni el teléfono de quien reporta. Vacío significa que no se envía correo.</p>
                     </td>
                 </tr>
             </table>

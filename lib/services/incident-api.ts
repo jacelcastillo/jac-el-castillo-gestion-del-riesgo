@@ -1,35 +1,43 @@
-import type { IncidentReport, IncidentStatus } from '@/types/incident'
+import type { IncidentReport, IncidentStatus } from '../../types/incident.ts'
 
 export interface SubmitResult {
   remoteId: string
   status: IncidentStatus
 }
 
-/** Contrato del backend de reportes. Reemplazar el mock por llamadas HTTP reales. */
+/**
+ * Contrato del backend de reportes.
+ * Slice 6 reemplaza `getStatus` por un `getStatuses(ids)` por lotes.
+ */
 export interface IncidentApi {
   submit(report: IncidentReport): Promise<SubmitResult>
   getStatus(remoteId: string, report: IncidentReport): Promise<IncidentStatus>
 }
 
-const MINUTE = 60_000
+const SUBMIT_TIMEOUT_MS = 35_000
+const KNOWN_STATUSES: IncidentStatus[] = ['enviado', 'en_atencion', 'cerrado']
 
-/**
- * Mock que simula latencia y el avance de estados en el tiempo, para que
- * la pantalla "Mis reportes" muestre todo el ciclo de vida.
- */
-export function createMockIncidentApi(): IncidentApi {
-  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
+/** Envía por el BFF `/api/reportes`; cualquier respuesta que no sea 200 o 201 lanza. */
+export function createHttpIncidentApi(): IncidentApi {
   return {
     async submit(report) {
-      await wait(800)
-      return { remoteId: `JAC-${report.id.slice(0, 8).toUpperCase()}`, status: 'enviado' }
+      const { id, createdAt, type, location, description, severity, peopleAffected, contact, consent } = report
+      const res = await fetch('/api/reportes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, createdAt, type, location, description, severity, peopleAffected, contact, consent }),
+        signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
+      })
+      if (res.status !== 200 && res.status !== 201) throw new Error(`El servidor respondió ${res.status}`)
+
+      const body = (await res.json().catch(() => null)) as Partial<SubmitResult> | null
+      if (!body?.remoteId || !body.status || !KNOWN_STATUSES.includes(body.status)) {
+        throw new Error('Respuesta inesperada del servidor')
+      }
+      return { remoteId: body.remoteId, status: body.status }
     },
     async getStatus(_remoteId, report) {
-      const age = Date.now() - new Date(report.createdAt).getTime()
-      if (age > 60 * MINUTE) return 'cerrado'
-      if (age > 2 * MINUTE) return 'en_atencion'
-      return 'enviado'
+      return report.status
     },
   }
 }

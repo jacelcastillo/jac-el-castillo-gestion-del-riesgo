@@ -19,6 +19,7 @@ fi
 wp option update timezone_string America/Bogota
 wp rewrite structure '/%postname%/' --hard
 wp plugin activate jac-el-castillo-gestion-del-riesgo
+wp option update gr_correo_avisos comite@example.invalid
 
 wp eval-file /dev-scripts/datos-prueba.php
 

@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { validationMessages as msg } from '@/config/incident'
-import type { IncidentDraft } from '@/types/incident'
+import { validationMessages as msg } from '../../config/incident.ts'
+import type { IncidentDraft } from '../../types/incident.ts'
 
 const locationSchema = z
   .object({
@@ -56,6 +56,15 @@ export const incidentSchema = z.object({
     })
     .optional(),
   contact: contactSchema,
+  consent: z.literal(true, { error: msg.consentRequired }),
 }) satisfies z.ZodType<IncidentDraft>
 
 export type IncidentFormValues = z.infer<typeof incidentSchema>
+
+/** Cuerpo que acepta el BFF: el mismo formulario más la identidad del reporte, sin foto. */
+export const reportRequestSchema = incidentSchema.omit({ photo: true }).extend({
+  id: z.uuid(),
+  createdAt: z.iso.datetime(),
+})
+
+export type ReportRequest = z.infer<typeof reportRequestSchema>

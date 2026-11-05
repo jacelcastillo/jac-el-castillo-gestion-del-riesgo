@@ -18,7 +18,11 @@ export function NavLink({ item, active, onNavigate, className }: NavLinkProps) {
       aria-current={active ? 'page' : undefined}
       className={cn(
         'flex min-h-11 items-center gap-2 rounded-xl px-3 text-base font-semibold transition-colors outline-none focus-visible:ring-4 focus-visible:ring-ring/50',
-        active ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted',
+        item.highlight
+          ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+          : active
+            ? 'bg-primary/10 text-primary'
+            : 'text-foreground hover:bg-muted',
         className,
       )}
     >

@@ -1,5 +1,5 @@
 import { createIndexedDbIncidentRepository } from '@/lib/repositories/indexeddb-incident-repository'
-import { createMockIncidentApi } from './incident-api'
+import { createHttpIncidentApi } from './incident-api'
 import { createIncidentService, type IncidentService } from './incident-service'
 
 /**
@@ -12,7 +12,7 @@ let incidentServiceInstance: IncidentService | null = null
 export function getIncidentService(): IncidentService {
   incidentServiceInstance ??= createIncidentService(
     createIndexedDbIncidentRepository(),
-    createMockIncidentApi(),
+    createHttpIncidentApi(),
   )
   return incidentServiceInstance
 }

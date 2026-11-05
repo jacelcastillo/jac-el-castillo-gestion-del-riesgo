@@ -1,9 +1,9 @@
-import type { InputHTMLAttributes } from 'react'
+import type { ComponentProps } from 'react'
 import type { IconName } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/atoms/icon'
 
-interface OptionCardProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
+interface OptionCardProps extends Omit<ComponentProps<'input'>, 'type'> {
   label: string
   description?: string
   icon?: IconName

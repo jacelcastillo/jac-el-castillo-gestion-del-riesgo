@@ -36,6 +36,12 @@ services:
     volumes:
       - wp:/var/www/html
       - ./jac-el-castillo-gestion-del-riesgo:/var/www/html/wp-content/plugins/jac-el-castillo-gestion-del-riesgo:ro
+      - ./dev/mailpit.php:/var/www/html/wp-content/mu-plugins/mailpit.php:ro
+
+  mailpit:
+    image: axllent/mailpit:v1.27.0
+    ports:
+      - "8025:8025"
 
   wpcli:
     image: wordpress:cli
