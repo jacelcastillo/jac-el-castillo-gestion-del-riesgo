@@ -30,6 +30,7 @@ export function useIncidents() {
 
   useEffect(() => {
     const unsubscribe = getIncidentService().subscribe(reload)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- initial sync of device reports
     void sync()
     return unsubscribe
   }, [reload, sync])

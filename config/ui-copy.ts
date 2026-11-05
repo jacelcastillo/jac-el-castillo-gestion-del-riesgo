@@ -19,7 +19,8 @@ export const uiCopy = {
   home: {
     reportCta: 'Reportar incidente',
     reportCtaHint: 'Deslizamientos, inundaciones, incendios y más',
-    quickLinksTitle: 'Accesos rápidos',
+    emergencyPhonesTitle: 'Teléfonos de emergencia',
+    seeAllPhones: 'Ver todos',
     latestNoticesTitle: 'Últimos avisos de la JAC',
     seeAllNotices: 'Ver todos los avisos',
   },
@@ -80,7 +81,7 @@ export const uiCopy = {
     accuracy: (meters: number) => `Precisión aproximada: ${meters} m`,
     orWriteAddress: 'O escribe la dirección o el barrio',
     addressLabel: 'Dirección o barrio',
-    addressPlaceholder: 'Ej: Calle 5 # 3-20, sector La Loma',
+    addressPlaceholder: 'Ej: Calle 5 # 3-20, barrio El Castillo',
     referenceLabel: 'Punto de referencia (opcional)',
     referencePlaceholder: 'Ej: frente a la tienda Doña Rosa',
     descriptionLabel: '¿Qué está pasando?',
@@ -138,6 +139,7 @@ export const uiCopy = {
   },
   footer: {
     rights: 'Junta de Acción Comunal El Castillo',
+    mainSite: 'Sitio de la JAC',
     disclaimer:
       'Este sitio es informativo. En una emergencia, llama a la Línea 123.',
   },

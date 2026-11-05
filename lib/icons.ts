@@ -6,14 +6,18 @@ import {
   CheckCircle2,
   ClipboardList,
   Droplets,
+  Eye,
   Flame,
   FileText,
   Flag,
   GraduationCap,
   HandHeart,
+  Handshake,
   HeartPulse,
   Home,
+  House,
   Info,
+  List,
   Map,
   MapPin,
   Megaphone,
@@ -24,6 +28,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Siren,
+  Target,
   Users,
   Wind,
   Zap,
@@ -35,7 +40,7 @@ import {
 } from 'lucide-react'
 
 /**
- * Registro central de íconos. Los datos de /config y /data guardan solo el
+ * Registro central de íconos. Los datos de /config guardan solo el
  * nombre del ícono (serializable), así el contenido puede venir de una API.
  */
 export const iconRegistry = {
@@ -48,14 +53,18 @@ export const iconRegistry = {
   check: CheckCircle2,
   clipboard: ClipboardList,
   droplets: Droplets,
+  eye: Eye,
   fileText: FileText,
   flag: Flag,
   flame: Flame,
   graduation: GraduationCap,
   handHeart: HandHeart,
+  handshake: Handshake,
   heartPulse: HeartPulse,
   home: Home,
+  house: House,
   info: Info,
+  list: List,
   map: Map,
   mapPin: MapPin,
   megaphone: Megaphone,
@@ -68,6 +77,7 @@ export const iconRegistry = {
   shieldAlert: ShieldAlert,
   shieldCheck: ShieldCheck,
   siren: Siren,
+  target: Target,
   users: Users,
   wind: Wind,
   zap: Zap,

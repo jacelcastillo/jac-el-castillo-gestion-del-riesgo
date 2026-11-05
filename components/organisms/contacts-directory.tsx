@@ -1,10 +1,10 @@
-import { contactGroups, contacts } from '@/config/contacts'
+import type { Contact, ContactGroup } from '@/types/content'
 import { ContactCard } from '@/components/molecules/contact-card'
 
-export function ContactsDirectory() {
+export function ContactsDirectory({ contacts, groups }: { contacts: Contact[]; groups: ContactGroup[] }) {
   return (
     <div className="flex flex-col gap-8">
-      {contactGroups.map((group) => {
+      {groups.map((group) => {
         const groupContacts = contacts.filter((contact) => contact.group === group.id)
         if (groupContacts.length === 0) return null
         const headingId = `grupo-${group.id}`

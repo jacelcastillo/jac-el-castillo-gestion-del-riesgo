@@ -1,74 +1,28 @@
-import type { NavItem, PageCopy, QuickLink } from '@/types/content'
+import type { NavItem, PageCopy } from '@/types/content'
 
 export const siteConfig = {
-  name: 'Gestión del Riesgo – JAC El Castillo',
-  shortName: 'Riesgo El Castillo',
-  organization: 'Junta de Acción Comunal El Castillo',
+  name: 'Gestión del Riesgo · JAC El Castillo',
+  shortName: 'Gestión del Riesgo',
+  organization: 'JAC El Castillo',
   description:
     'Aprende a prevenir, reaccionar y recuperarte ante emergencias en El Castillo. Reporta incidentes, conoce los riesgos del sector y ten a mano los números de emergencia.',
-  url: 'https://gestionriesgo.jacelcastillo.com',
+  url: 'https://gestionriesgo.jacelcastillo.com.co',
+  mainSiteUrl: 'https://jacelcastillo.com.co',
   locale: 'es-CO',
   timeZone: 'America/Bogota',
-  themeColor: '#1e4fa3',
+  themeColor: '#1f3d9e',
 } as const
 
 /** Barra inferior fija en móvil. */
 export const bottomNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
-  { href: '/riesgos', label: 'Aprende', icon: 'book' },
-  { href: '/reportar', label: 'Reportar', icon: 'siren', highlight: true },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
 
-/** Navegación completa (encabezado y menú). */
+/** Navegación del encabezado en computador. */
 export const mainNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
-  { href: '/riesgos', label: 'Conoce tus riesgos', icon: 'book' },
-  { href: '/mapa', label: 'Mapa comunitario', icon: 'map' },
-  { href: '/preparate', label: 'Prepárate', icon: 'backpack' },
-  { href: '/contactos', label: 'Emergencias', icon: 'phone' },
-  { href: '/avisos', label: 'Avisos', icon: 'megaphone' },
-  { href: '/sobre-la-jac', label: 'Sobre la JAC', icon: 'users' },
-  { href: '/mis-reportes', label: 'Mis reportes', icon: 'clipboard' },
-]
-
-export const quickLinks: QuickLink[] = [
-  {
-    href: '/riesgos',
-    title: 'Conoce tus riesgos',
-    description: 'Qué hacer antes, durante y después.',
-    icon: 'book',
-  },
-  {
-    href: '/mapa',
-    title: 'Mapa comunitario',
-    description: 'Puntos de encuentro y rutas.',
-    icon: 'map',
-  },
-  {
-    href: '/preparate',
-    title: 'Prepárate',
-    description: 'Plan familiar y kit de emergencia.',
-    icon: 'backpack',
-  },
-  {
-    href: '/contactos',
-    title: 'Números de emergencia',
-    description: 'Llama con un solo toque.',
-    icon: 'phone',
-  },
-  {
-    href: '/avisos',
-    title: 'Avisos y talleres',
-    description: 'Simulacros y comunicados.',
-    icon: 'megaphone',
-  },
-  {
-    href: '/mis-reportes',
-    title: 'Mis reportes',
-    description: 'Revisa el estado de tus reportes.',
-    icon: 'clipboard',
-  },
+  { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
 
 export const pageCopy = {

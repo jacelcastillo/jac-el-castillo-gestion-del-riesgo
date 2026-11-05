@@ -6,7 +6,6 @@ export const risks: Risk[] = [
     name: 'Deslizamientos',
     icon: 'mountain',
     summary: 'Cuando la tierra, el barro o las piedras se vienen loma abajo, sobre todo después de lluvias fuertes.',
-    whereInSector: 'Laderas del sector La Loma y el talud junto a la vía principal.',
     warningSigns: [
       'Grietas nuevas en paredes, pisos o en el terreno.',
       'Árboles, postes o cercas que se inclinan.',
@@ -41,7 +40,6 @@ export const risks: Risk[] = [
     name: 'Inundaciones',
     icon: 'droplets',
     summary: 'Cuando la quebrada o el alcantarillado se desbordan y el agua entra a calles y casas.',
-    whereInSector: 'Orillas de la quebrada en el sector La Quebrada y partes bajas del barrio.',
     warningSigns: [
       'Lluvias fuertes por varias horas seguidas.',
       'La quebrada sube rápido o el agua cambia de color.',
@@ -74,7 +72,6 @@ export const risks: Risk[] = [
     name: 'Incendios forestales',
     icon: 'flame',
     summary: 'Fuego en potreros, bosques o zonas verdes que puede llegar a las casas, sobre todo en temporada seca.',
-    whereInSector: 'Zonas verdes y potreros del borde del barrio, especialmente entre diciembre y marzo.',
     warningSigns: [
       'Olor a humo o ceniza en el aire.',
       'Humo saliendo de la montaña o de un lote.',
@@ -105,7 +102,6 @@ export const risks: Risk[] = [
     name: 'Sismos',
     icon: 'activity',
     summary: 'Movimientos de la tierra que pueden ocurrir en cualquier momento y sin aviso.',
-    whereInSector: 'Todo el barrio. Las casas sin refuerzo estructural son las más vulnerables.',
     warningSigns: [
       'Los sismos no avisan. Lo importante es estar preparado siempre.',
       'Después de un sismo pueden venir réplicas.',
@@ -136,7 +132,6 @@ export const risks: Risk[] = [
     name: 'Vendavales',
     icon: 'wind',
     summary: 'Vientos muy fuertes que pueden levantar techos, tumbar árboles y dañar redes eléctricas.',
-    whereInSector: 'Viviendas con techos livianos y zonas con árboles grandes cerca de las casas.',
     warningSigns: [
       'Cambios bruscos de temperatura y nubes muy oscuras.',
       'Viento que aumenta rápido de fuerza.',
@@ -165,7 +160,6 @@ export const risks: Risk[] = [
     name: 'Riesgo eléctrico',
     icon: 'zap',
     summary: 'Accidentes por cables caídos, conexiones ilegales o instalaciones en mal estado.',
-    whereInSector: 'Postes antiguos, conexiones improvisadas y cables cerca de árboles.',
     warningSigns: [
       'Cables caídos, sueltos o que echan chispas.',
       'Olor a quemado en tomas o interruptores.',

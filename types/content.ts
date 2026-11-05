@@ -8,13 +8,6 @@ export interface NavItem {
   highlight?: boolean
 }
 
-export interface QuickLink {
-  href: string
-  title: string
-  description: string
-  icon: IconName
-}
-
 export interface PageCopy {
   title: string
   intro: string
@@ -53,7 +46,7 @@ export interface Risk {
   name: string
   icon: IconName
   summary: string
-  whereInSector: string
+  whereInSector?: string
   warningSigns: string[]
   phases: Record<RiskPhaseId, string[]>
 }
@@ -65,7 +58,7 @@ export interface Contact {
   name: string
   role: string
   phone: string
-  /** Número tal como se muestra, ej. "123" o "300 555 0101". */
+  /** Número tal como se muestra, ej. "123" o "300 123 4567". */
   displayPhone: string
   group: ContactGroupId
   icon: IconName
@@ -105,7 +98,7 @@ export interface MapPoint {
   name: string
   description: string
   reference: string
-  /** Posición en el croquis, en porcentaje (0–100). */
+  /** Posición en el croquis, en porcentaje, de 0 a 100. */
   position: { x: number; y: number }
   /** Solo rutas: trazado en porcentaje dentro del croquis. */
   path?: Array<{ x: number; y: number }>
@@ -156,14 +149,14 @@ export interface AboutContent {
   committee: {
     title: string
     description: string
-    members: CommitteeMember[]
+    members?: CommitteeMember[]
   }
   participate: {
     title: string
     description: string
     ways: ParticipationWay[]
   }
-  meeting: {
+  meeting?: {
     title: string
     detail: string
   }

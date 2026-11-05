@@ -16,6 +16,7 @@ export function usePersistedState<T>(key: string, initialValue: T) {
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(storageKey)
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after hydration to avoid a mismatch
       if (stored !== null) setValue(JSON.parse(stored) as T)
     } catch {
       // Almacenamiento no disponible (modo privado): se usa el valor inicial.

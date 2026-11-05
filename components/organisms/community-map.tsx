@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react'
-import { mapPointKinds } from '@/data/map-points'
+import { mapPointKinds } from '@/config/map'
 import { uiCopy } from '@/config/ui-copy'
 import type { MapPoint } from '@/types/content'
 import { IconBadge, type IconBadgeTone } from '@/components/atoms/icon-badge'

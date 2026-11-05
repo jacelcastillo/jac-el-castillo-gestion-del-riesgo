@@ -1,48 +1,42 @@
-import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from 'next/font/google'
+import { ThemeProvider } from 'next-themes'
+import { siteConfig } from '@/config/site'
+import { AppShell } from '@/components/templates/app-shell'
 import './globals.css'
 
+const bricolage = Bricolage_Grotesque({
+  variable: '--font-bricolage',
+  subsets: ['latin', 'latin-ext'],
+})
+
+const atkinson = Atkinson_Hyperlegible_Next({
+  variable: '--font-atkinson',
+  subsets: ['latin', 'latin-ext'],
+})
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
-  },
+  metadataBase: new URL(siteConfig.url),
+  title: { default: siteConfig.name, template: `%s · ${siteConfig.organization}` },
+  description: siteConfig.description,
+  robots: { index: false, follow: false },
 }
 
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: siteConfig.themeColor },
+    { media: '(prefers-color-scheme: dark)', color: '#10131f' },
   ],
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">
-        {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
+    <html lang={siteConfig.locale} suppressHydrationWarning className={`${bricolage.variable} ${atkinson.variable}`}>
+      <body className="font-sans antialiased">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
       </body>
     </html>
   )

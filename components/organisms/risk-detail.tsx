@@ -26,13 +26,15 @@ export function RiskDetail({ risk }: { risk: Risk }) {
       </header>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <section aria-labelledby="donde" className="flex flex-col gap-2 rounded-2xl bg-muted p-5">
-          <h2 id="donde" className="flex items-center gap-2 text-lg font-bold text-foreground">
-            <MapPin aria-hidden="true" className="size-5 text-primary" />
-            {uiCopy.risks.whereInSector}
-          </h2>
-          <p className="text-base leading-relaxed text-foreground">{risk.whereInSector}</p>
-        </section>
+        {risk.whereInSector && (
+          <section aria-labelledby="donde" className="flex flex-col gap-2 rounded-2xl bg-muted p-5">
+            <h2 id="donde" className="flex items-center gap-2 text-lg font-bold text-foreground">
+              <MapPin aria-hidden="true" className="size-5 text-primary" />
+              {uiCopy.risks.whereInSector}
+            </h2>
+            <p className="text-base leading-relaxed text-foreground">{risk.whereInSector}</p>
+          </section>
+        )}
         <section aria-labelledby="senales" className="flex flex-col gap-2 rounded-2xl border-2 border-warning bg-warning/10 p-5">
           <h2 id="senales" className="flex items-center gap-2 text-lg font-bold text-foreground">
             <Eye aria-hidden="true" className="size-5 text-warning-foreground dark:text-warning" />

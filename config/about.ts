@@ -9,13 +9,6 @@ export const aboutContent: AboutContent = {
     title: 'Comité de Gestión del Riesgo',
     description:
       'Vecinos voluntarios que coordinan la prevención, los simulacros y la respuesta ante emergencias junto con las autoridades.',
-    members: [
-      { id: 'coordinacion', name: 'Coordinación general', role: 'Enlace con la Alcaldía y el Consejo Municipal' },
-      { id: 'prevencion', name: 'Prevención y educación', role: 'Talleres, campañas y simulacros' },
-      { id: 'primeros-auxilios', name: 'Primeros auxilios', role: 'Atención inicial y botiquines comunitarios' },
-      { id: 'evacuacion', name: 'Evacuación y puntos de encuentro', role: 'Rutas, señalización y conteo de personas' },
-      { id: 'comunicaciones', name: 'Comunicaciones', role: 'Avisos, alertas y este sitio web' },
-    ],
   },
   participate: {
     title: 'Cómo participar',
@@ -46,9 +39,5 @@ export const aboutContent: AboutContent = {
         icon: 'megaphone',
       },
     ],
-  },
-  meeting: {
-    title: 'Reuniones del comité',
-    detail: 'Primer sábado de cada mes, 4:00 p. m., Salón Comunal El Castillo.',
   },
 }

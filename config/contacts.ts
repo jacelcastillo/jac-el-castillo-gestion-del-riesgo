@@ -18,7 +18,6 @@ export const contactGroups: ContactGroup[] = [
   },
 ]
 
-// Los números de la JAC y líderes son de ejemplo hasta tener los datos oficiales.
 export const contacts: Contact[] = [
   {
     id: 'linea-123',
@@ -65,50 +64,5 @@ export const contacts: Contact[] = [
     displayPhone: '112',
     group: 'nacional',
     icon: 'shieldAlert',
-  },
-  {
-    id: 'jac-presidencia',
-    name: 'Presidencia JAC',
-    role: 'Presidente(a) de la Junta',
-    phone: '+573005550101',
-    displayPhone: '300 555 0101',
-    group: 'jac',
-    icon: 'building',
-  },
-  {
-    id: 'jac-comite-riesgo',
-    name: 'Comité de Gestión del Riesgo',
-    role: 'Coordinación de emergencias de la JAC',
-    phone: '+573005550102',
-    displayPhone: '300 555 0102',
-    group: 'jac',
-    icon: 'shieldCheck',
-  },
-  {
-    id: 'lider-la-loma',
-    name: 'Sector La Loma',
-    role: 'Líder de sector',
-    phone: '+573005550201',
-    displayPhone: '300 555 0201',
-    group: 'sector',
-    icon: 'mountain',
-  },
-  {
-    id: 'lider-la-quebrada',
-    name: 'Sector La Quebrada',
-    role: 'Líder de sector',
-    phone: '+573005550202',
-    displayPhone: '300 555 0202',
-    group: 'sector',
-    icon: 'droplets',
-  },
-  {
-    id: 'lider-el-centro',
-    name: 'Sector El Centro',
-    role: 'Líder de sector',
-    phone: '+573005550203',
-    displayPhone: '300 555 0203',
-    group: 'sector',
-    icon: 'home',
   },
 ]

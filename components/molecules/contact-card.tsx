@@ -24,7 +24,7 @@ export function ContactCard({ contact }: { contact: Contact }) {
       <CallLink
         phone={contact.phone}
         accessibleLabel={`${uiCopy.contacts.call} a ${contact.name}, ${contact.displayPhone}`}
-        tone={isEmergency || contact.group === 'nacional' ? 'emergency' : 'primary'}
+        tone={isEmergency ? 'emergency' : 'primary'}
         size="lg"
         className="w-full sm:w-auto"
       >

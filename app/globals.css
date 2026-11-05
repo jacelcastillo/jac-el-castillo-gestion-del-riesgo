@@ -4,8 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme static {
+  --color-flag-blue: #1f3d9e;
+  --color-flag-red: #d3262e;
+  --color-sun: #f6d31a;
+  --color-ink: #1d1636;
+}
+
 @theme inline {
   --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
 
   --color-ring: var(--ring);
   --color-input: var(--input);
@@ -54,7 +62,7 @@
   --card-foreground: oklch(0.22 0.03 255);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.03 255);
-  --primary: oklch(0.43 0.15 258);
+  --primary: var(--color-flag-blue);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.95 0.02 250);
   --secondary-foreground: oklch(0.3 0.08 258);
@@ -62,14 +70,14 @@
   --muted-foreground: oklch(0.45 0.025 255);
   --accent: oklch(0.94 0.03 250);
   --accent-foreground: oklch(0.3 0.1 258);
-  --destructive: oklch(0.53 0.21 27);
+  --destructive: var(--color-flag-red);
   --destructive-foreground: oklch(0.99 0 0);
   --warning: oklch(0.72 0.17 55);
   --warning-foreground: oklch(0.22 0.05 50);
   --success: oklch(0.52 0.13 150);
   --success-foreground: oklch(0.99 0 0);
-  --caution: oklch(0.88 0.16 95);
-  --caution-foreground: oklch(0.25 0.05 80);
+  --caution: var(--color-sun);
+  --caution-foreground: var(--color-ink);
   --border: oklch(0.89 0.012 250);
   --input: oklch(0.8 0.02 250);
   --ring: oklch(0.55 0.17 258);
@@ -93,7 +101,7 @@
   --accent: oklch(0.3 0.04 258);
   --accent-foreground: oklch(0.96 0.005 250);
   --destructive: oklch(0.64 0.2 25);
-  --destructive-foreground: oklch(0.99 0 0);
+  --destructive-foreground: oklch(0.17 0.03 258);
   --warning: oklch(0.76 0.16 58);
   --warning-foreground: oklch(0.2 0.05 50);
   --success: oklch(0.7 0.14 152);
@@ -112,10 +120,24 @@
   html {
     -webkit-tap-highlight-color: transparent;
   }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
   body {
     @apply bg-background text-foreground text-base leading-relaxed;
   }
   :focus-visible {
     @apply outline-3 outline-offset-2 outline-ring;
   }
+}
+
+@utility flag-rule {
+  height: 0.5rem;
+  background: linear-gradient(
+    var(--color-sun) 0 50%,
+    var(--color-flag-blue) 50% 75%,
+    var(--color-flag-red) 75%
+  );
 }

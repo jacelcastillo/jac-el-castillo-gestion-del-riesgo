@@ -9,6 +9,8 @@ export function AboutSections({ about }: { about: AboutContent }) {
     { id: 'mision', title: uiCopy.about.mission, text: about.mission, icon: 'target' as const },
     { id: 'vision', title: uiCopy.about.vision, text: about.vision, icon: 'eye' as const },
   ]
+  const { members } = about.committee
+  const { meeting } = about
 
   return (
     <div className="flex flex-col gap-8">
@@ -28,19 +30,21 @@ export function AboutSections({ about }: { about: AboutContent }) {
           {about.committee.title}
         </SectionHeading>
         <p className="text-base leading-relaxed text-muted-foreground">{about.committee.description}</p>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {about.committee.members.map((member) => (
-            <li key={member.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <User aria-hidden="true" className="size-6" />
-              </span>
-              <div>
-                <p className="text-base font-bold text-card-foreground">{member.name}</p>
-                <p className="text-sm text-muted-foreground">{member.role}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        {members && (
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {members.map((member) => (
+              <li key={member.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <User aria-hidden="true" className="size-6" />
+                </span>
+                <div>
+                  <p className="text-base font-bold text-card-foreground">{member.name}</p>
+                  <p className="text-sm text-muted-foreground">{member.role}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section aria-labelledby="participa" className="flex flex-col gap-3">
@@ -59,13 +63,15 @@ export function AboutSections({ about }: { about: AboutContent }) {
         </ul>
       </section>
 
-      <aside className="flex items-start gap-3 rounded-2xl bg-primary p-5 text-primary-foreground">
-        <CalendarDays aria-hidden="true" className="size-7 shrink-0" />
-        <div>
-          <p className="text-lg font-bold">{about.meeting.title}</p>
-          <p className="text-base leading-relaxed opacity-95">{about.meeting.detail}</p>
-        </div>
-      </aside>
+      {meeting && (
+        <aside className="flex items-start gap-3 rounded-2xl bg-primary p-5 text-primary-foreground">
+          <CalendarDays aria-hidden="true" className="size-7 shrink-0" />
+          <div>
+            <p className="text-lg font-bold">{meeting.title}</p>
+            <p className="text-base leading-relaxed opacity-95">{meeting.detail}</p>
+          </div>
+        </aside>
+      )}
     </div>
   )
 }

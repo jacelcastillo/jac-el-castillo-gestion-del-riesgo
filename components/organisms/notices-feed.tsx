@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { noticeKinds } from '@/data/notices'
+import { noticeKinds } from '@/config/notices'
 import { uiCopy } from '@/config/ui-copy'
 import { cn } from '@/lib/utils'
 import type { Notice, NoticeKind } from '@/types/content'

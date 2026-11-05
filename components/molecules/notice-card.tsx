@@ -1,5 +1,5 @@
 import { Calendar, Clock, MapPin } from 'lucide-react'
-import { noticeKinds } from '@/data/notices'
+import { noticeKinds } from '@/config/notices'
 import { uiCopy } from '@/config/ui-copy'
 import { formatDate } from '@/lib/format'
 import type { Notice } from '@/types/content'
