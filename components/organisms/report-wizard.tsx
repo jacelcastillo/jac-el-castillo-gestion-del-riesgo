@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useRef, useState } from 'react'
 import { FormProvider, useForm, type Resolver } from 'react-hook-form'
-import { activeReportSteps } from '@/config/incident'
+import { reportSteps } from '@/config/incident'
 import { uiCopy } from '@/config/ui-copy'
 import { useCreateIncident } from '@/hooks/use-incidents'
 import { incidentSchema } from '@/lib/validation/incident-schema'
@@ -16,6 +16,7 @@ import { ContactStep } from '@/components/organisms/contact-step'
 import { DetailsStep } from '@/components/organisms/details-step'
 import { LocationStep } from '@/components/organisms/location-step'
 import { ReportSuccess } from '@/components/organisms/report-success'
+import { PhotoStep } from '@/components/organisms/photo-step'
 import { ReviewStep } from '@/components/organisms/review-step'
 import { TypeStep } from '@/components/organisms/type-step'
 
@@ -50,8 +51,8 @@ export function ReportWizard() {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const hasMoved = useRef(false)
 
-  const step = activeReportSteps[stepIndex]
-  const isLast = stepIndex === activeReportSteps.length - 1
+  const step = reportSteps[stepIndex]
+  const isLast = stepIndex === reportSteps.length - 1
 
   useEffect(() => {
     if (hasMoved.current) titleRef.current?.focus()
@@ -73,7 +74,7 @@ export function ReportWizard() {
         }
       },
       (errors) => {
-        const failing = activeReportSteps.findIndex((item) => item.fields.some((field) => field in errors))
+        const failing = reportSteps.findIndex((item) => item.fields.some((field) => field in errors))
         if (failing >= 0 && failing !== stepIndex) goTo(failing)
       },
     )()
@@ -95,7 +96,7 @@ export function ReportWizard() {
   return (
     <div className="flex flex-col gap-6">
       <LifeRiskBanner />
-      <StepperProgress current={stepIndex} total={activeReportSteps.length} />
+      <StepperProgress current={stepIndex} total={reportSteps.length} />
       <FormProvider {...form}>
         <form
           noValidate
@@ -115,8 +116,9 @@ export function ReportWizard() {
           {step.id === 'tipo' && <TypeStep title={step.title} />}
           {step.id === 'ubicacion' && <LocationStep />}
           {step.id === 'detalles' && <DetailsStep />}
+          {step.id === 'foto' && <PhotoStep />}
           {step.id === 'contacto' && <ContactStep />}
-          {step.id === 'resumen' && <ReviewStep onEdit={(id) => goTo(activeReportSteps.findIndex((item) => item.id === id))} />}
+          {step.id === 'resumen' && <ReviewStep onEdit={(id) => goTo(reportSteps.findIndex((item) => item.id === id))} />}
           {saveFailed && <FieldError id="save-error" message={uiCopy.report.submitError} />}
           <div className="flex flex-col-reverse gap-3 sm:flex-row">
             {stepIndex > 0 && (

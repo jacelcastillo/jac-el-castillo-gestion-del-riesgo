@@ -1,3 +1,4 @@
+import { dataUrlToBlob } from '../data-url.ts'
 import type { IncidentReport, IncidentStatus } from '../../types/incident.ts'
 
 export interface SubmitResult {
@@ -21,11 +22,13 @@ const KNOWN_STATUSES: IncidentStatus[] = ['enviado', 'en_atencion', 'cerrado']
 export function createHttpIncidentApi(): IncidentApi {
   return {
     async submit(report) {
-      const { id, createdAt, type, location, description, severity, peopleAffected, contact, consent } = report
+      const { id, createdAt, type, location, description, severity, peopleAffected, contact, consent, photo } = report
+      const form = new FormData()
+      form.append('datos', JSON.stringify({ id, createdAt, type, location, description, severity, peopleAffected, contact, consent }))
+      if (photo) form.append('foto', dataUrlToBlob(photo.dataUrl), 'foto.jpg')
       const res = await fetch('/api/reportes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, createdAt, type, location, description, severity, peopleAffected, contact, consent }),
+        body: form,
         signal: AbortSignal.timeout(SUBMIT_TIMEOUT_MS),
       })
       if (res.status !== 200 && res.status !== 201) throw new Error(`El servidor respondió ${res.status}`)

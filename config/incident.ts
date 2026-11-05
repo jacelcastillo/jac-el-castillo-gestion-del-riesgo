@@ -66,9 +66,6 @@ export const reportSteps: ReportStepDefinition[] = [
   { id: 'resumen', title: 'Confirma y envía', description: 'Revisa que todo esté bien.', fields: ['consent'] },
 ]
 
-/** The photo step ships in slice 5. */
-export const activeReportSteps = reportSteps.filter((step) => step.id !== 'foto')
-
 export const validationMessages = {
   typeRequired: 'Elige el tipo de incidente.',
   locationRequired: 'Usa tu ubicación o escribe la dirección o el barrio.',

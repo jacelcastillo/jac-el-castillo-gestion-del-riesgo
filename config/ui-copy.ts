@@ -111,6 +111,7 @@ export const uiCopy = {
     removePhoto: 'Quitar foto',
     compressing: 'Preparando la foto…',
     photoAlt: 'Vista previa de la foto del incidente',
+    photoError: 'No pudimos usar esa foto. Prueba con otra.',
     anonymousLabel: 'Enviar de forma anónima',
     anonymousHint: 'No compartiremos tus datos. Si envías anónimo, no podremos contactarte.',
     nameLabel: 'Tu nombre',

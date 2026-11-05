@@ -38,6 +38,14 @@ export function ReviewStep({ onEdit }: { onEdit: (stepId: string) => void }) {
         <SummaryRow label={copy.summaryLabels.people} onEdit={() => onEdit('detalles')}>
           {labelOf(peopleAffectedOptions, values.peopleAffected)}
         </SummaryRow>
+        <SummaryRow label={copy.summaryLabels.photo} onEdit={() => onEdit('foto')}>
+          {values.photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={values.photo.dataUrl} alt={copy.photoAlt} className="h-24 rounded-lg object-cover" />
+          ) : (
+            copy.noPhoto
+          )}
+        </SummaryRow>
         <SummaryRow label={copy.summaryLabels.contact} onEdit={() => onEdit('contacto')}>
           {contact}
         </SummaryRow>

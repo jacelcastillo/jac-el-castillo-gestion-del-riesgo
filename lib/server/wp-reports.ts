@@ -53,7 +53,7 @@ async function attempt(url: URL, init: RequestInit): Promise<Attempt> {
 }
 
 /** WordPress dedupes by the report id, so retrying a request that may have landed is safe. */
-export async function forwardReport(report: ReportRequest, headers: Headers): Promise<ForwardResult> {
+export async function forwardReport(report: ReportRequest, photo: Blob | undefined, headers: Headers): Promise<ForwardResult> {
   const { WP_URL, WP_APP_USER, WP_APP_PASSWORD } = process.env
   if (!WP_URL || !WP_APP_USER || !WP_APP_PASSWORD) {
     console.error('WP_URL, WP_APP_USER and WP_APP_PASSWORD must be set to forward reports')
@@ -62,15 +62,17 @@ export async function forwardReport(report: ReportRequest, headers: Headers): Pr
 
   const url = new URL('/wp-json/jac-gr/v1/reportes', WP_URL)
   const ip = clientIp(headers)
+  const body = new FormData()
+  body.append('datos', JSON.stringify(report))
+  if (photo) body.append('foto', photo, 'foto.jpg')
   const init: RequestInit = {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
       Accept: 'application/json',
       Authorization: `Basic ${Buffer.from(`${WP_APP_USER}:${WP_APP_PASSWORD}`).toString('base64')}`,
       ...(ip ? { 'X-GR-IP': ip } : {}),
     },
-    body: JSON.stringify(report),
+    body,
     cache: 'no-store',
   }
 

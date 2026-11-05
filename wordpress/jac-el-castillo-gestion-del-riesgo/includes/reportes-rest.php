@@ -162,7 +162,12 @@ function gr_contar_nuevo_reporte(string $clave): void {
 }
 
 function gr_recibir_reporte(WP_REST_Request $peticion): WP_REST_Response|WP_Error {
-    $datos = gr_normalizar_reporte($peticion->get_json_params());
+    $cuerpo = $peticion->get_json_params();
+    if (!is_array($cuerpo)) {
+        $texto = $peticion->get_param('datos');
+        $cuerpo = is_string($texto) ? json_decode($texto, true) : null;
+    }
+    $datos = gr_normalizar_reporte($cuerpo);
     if (is_wp_error($datos)) {
         return $datos;
     }
@@ -178,8 +183,20 @@ function gr_recibir_reporte(WP_REST_Request $peticion): WP_REST_Response|WP_Erro
         return new WP_Error('gr_limite', 'Demasiados reportes en poco tiempo. Intenta de nuevo en unos minutos.', ['status' => 429]);
     }
 
+    $archivo = $peticion->get_file_params()['foto'] ?? null;
+    if (is_array($archivo)) {
+        $foto = gr_guardar_foto($archivo);
+        if (is_wp_error($foto)) {
+            return $foto;
+        }
+        $datos['foto'] = $foto;
+    }
+
     $id_post = gr_crear_reporte($datos);
     if (is_wp_error($id_post)) {
+        if (!empty($datos['foto'])) {
+            unlink(gr_carpeta_fotos() . '/' . $datos['foto']);
+        }
         return new WP_Error('gr_no_guardado', 'No se pudo guardar el reporte.', ['status' => 500]);
     }
 

@@ -10,6 +10,7 @@ if (!base) {
   process.exit(2)
 }
 
+const fotoMinima = Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOjM9PDkzODdASFxOQERXRTc4UG1RV19iZ2hnPk1xeXBkeFxlZ2P/2wBDARESEhgVGC8aGi9jQjhCY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2P/wAARCAACAAIDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDHooorhPqD/9k=', 'base64')
 const sitioNuevo = 'https://web.jacelcastillo.com.co'
 const usuarioApp = 'app-gestion-riesgo'
 const mailpit = 'http://localhost:8025/api/v1'
@@ -87,6 +88,10 @@ async function revisarProduccion() {
     body: '{}',
   })
   check('POST /reportes sin credenciales: 401', sinCredenciales.status === 401, String(sinCredenciales.status))
+
+  // La carpeta sola puede dar 403 sin .htaccess (sin listado de directorios); index.php existe y sin bloqueo da 200.
+  const { res: carpetaFotos } = await pedir('/wp-content/uploads/gr-reportes/index.php')
+  check('carpeta de fotos de reportes bloqueada (index.php: 403)', carpetaFotos.status === 403, String(carpetaFotos.status))
 
   const avisos = Array.isArray(data.avisos) ? data.avisos : []
   if (avisos.length === 0) {
@@ -215,6 +220,12 @@ async function revisarLocal() {
   )
   check('migración 0.2.0: administrator recupera las capacidades de reportes', rolesJson.admin === true, roles02.out || roles02.err)
 
+  const carpetaFotos030 = '$c = wp_upload_dir()["basedir"] . "/gr-reportes";'
+  wp('eval', `${carpetaFotos030} foreach (["/.htaccess", "/index.php"] as $f) { @unlink($c . $f); } rmdir($c);`)
+  wp('option', 'update', 'gr_version', '0.2.0')
+  const fotos030 = wp('eval', `${carpetaFotos030} echo json_encode([is_dir($c), file_exists($c . "/.htaccess"), file_exists($c . "/index.php")]);`)
+  check('migración 0.3.0: crea la carpeta de fotos con .htaccess e index.php', fotos030.out.endsWith('[true,true,true]'), fotos030.out || fotos030.err)
+
   const visibles = wp('post', 'list', '--category_name=gestion-del-riesgo', '--post_status=publish', '--format=count')
   check('WP-CLI sigue viendo las entradas de riesgo', visibles.ok && Number(visibles.out) > 0, visibles.out || visibles.err)
   const repetidas = wp('db', 'query', "SELECT meta_value FROM wp_postmeta WHERE meta_key = 'gr_prueba' GROUP BY meta_value HAVING COUNT(*) > 1", '--skip-column-names')
@@ -269,6 +280,17 @@ async function revisarReportes() {
       headers: { 'content-type': 'application/json', ...(auth ? { authorization: autorizacion } : {}), ...(ip ? { 'x-gr-ip': ip } : {}) },
       body: json(cuerpo),
     }).then(async (res) => ({ status: res.status, cuerpo: await res.json().catch(() => null) }))
+
+  const enviarForm = (datos, foto, ip) => {
+    const form = new FormData()
+    form.append('datos', json(datos))
+    if (foto) form.append('foto', foto, 'foto.jpg')
+    return fetch(`${base}/wp-json/jac-gr/v1/reportes`, {
+      method: 'POST',
+      headers: { authorization: autorizacion, 'x-gr-ip': ip },
+      body: form,
+    }).then(async (res) => ({ status: res.status, cuerpo: await res.json().catch(() => null) }))
+  }
 
   const creados = []
   try {
@@ -329,6 +351,56 @@ async function revisarReportes() {
     const sexto = await enviar('/reportes', reporteValido(uuid()), { ip: '10.0.9.9' })
     check('5 reportes nuevos de una IP: 201', estadosLimite.slice(0, 5).every((c) => c === 201), estadosLimite.join(','))
     check('el 6.º reporte nuevo de la misma IP: 429 gr_limite', estadosLimite[5] === 429 && sexto.status === 429 && sexto.cuerpo?.code === 'gr_limite', `${estadosLimite[5]} ${json(sexto)}`)
+
+    const idFoto = uuid()
+    creados.push(idFoto)
+    const conFoto = await enviarForm(reporteValido(idFoto), new Blob([fotoMinima], { type: 'image/jpeg' }), '10.0.6.6')
+    check('multipart con foto JPEG: 201', conFoto.status === 201 && conFoto.cuerpo?.id === idFoto, json(conFoto))
+    const idPostFoto = idsPorCliente(idFoto)[0] ?? '0'
+    const nombreFoto = wp('post', 'meta', 'get', idPostFoto, 'gr_foto').out
+    check('foto: gr_foto es un nombre de 32 hex y .jpg', /^[0-9a-f]{32}\.jpg$/.test(nombreFoto), nombreFoto)
+    const rutaFoto = `file_exists(gr_carpeta_fotos() . "/${nombreFoto}")`
+    const existe = wp('eval', `echo ${rutaFoto} ? "si" : "no";`)
+    check('foto: el archivo existe en el contenedor', existe.out.endsWith('si'), existe.out || existe.err)
+
+    const textoComoFoto = await enviarForm(reporteValido(uuid()), new Blob(['esto no es una imagen'], { type: 'image/jpeg' }), '10.0.6.6')
+    check('foto que es texto plano: 400', textoComoFoto.status === 400, json(textoComoFoto))
+    const grande = Buffer.concat([fotoMinima, Buffer.alloc(1_600_000)])
+    const fotoGrande = await enviarForm(reporteValido(uuid()), new Blob([grande], { type: 'image/jpeg' }), '10.0.6.6')
+    check('foto de 1.6 MB: 413', fotoGrande.status === 413, json(fotoGrande))
+
+    const directa = await fetch(`${base}/wp-content/uploads/gr-reportes/${nombreFoto}`)
+    check('URL directa de la foto: 403', directa.status === 403, String(directa.status))
+    const indice = await fetch(`${base}/wp-content/uploads/gr-reportes/index.php`)
+    check('URL directa de index.php en la carpeta: 403', indice.status === 403, String(indice.status))
+
+    const sinSesion = await fetch(`${base}/wp-admin/admin-post.php?action=gr_foto&id=${idPostFoto}`)
+    check('admin-post gr_foto sin sesión: 403 y no es imagen', sinSesion.status === 403 && !(sinSesion.headers.get('content-type') ?? '').startsWith('image/'), `${sinSesion.status} ${sinSesion.headers.get('content-type')}`)
+
+    const login = await fetch(`${base}/wp-login.php`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: 'wordpress_test_cookie=WP Cookie check' },
+      body: new URLSearchParams({ log: 'admin', pwd: 'admin-local', 'wp-submit': 'Log In' }),
+    })
+    const cookie = login.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ')
+    const edicion = await fetch(`${base}/wp-admin/post.php?post=${idPostFoto}&action=edit`, { headers: { cookie } })
+    const html = await edicion.text()
+    const cajaDatos = html.slice(html.indexOf('Datos del reporte'))
+    const src = /<img src="([^"]*action=gr_foto[^"]*)"/.exec(cajaDatos)?.[1]?.replaceAll('&#038;', '&').replaceAll('&amp;', '&')
+    check('wp-admin: la caja Datos del reporte muestra la foto', Boolean(src), `${login.status} ${edicion.status}`)
+    const urlFoto = src ? new URL(src, base) : null
+    const conSesion = urlFoto ? await fetch(`${base}${urlFoto.pathname}${urlFoto.search}`, { headers: { cookie } }) : null
+    const bytesFoto = conSesion ? Buffer.from(await conSesion.arrayBuffer()) : Buffer.alloc(0)
+    check('admin-post gr_foto con sesión de admin: 200 image/jpeg con los mismos bytes', conSesion?.status === 200 && conSesion.headers.get('content-type') === 'image/jpeg' && bytesFoto.equals(fotoMinima), `${conSesion?.status} ${conSesion?.headers.get('content-type')}`)
+
+    const correos = await fetch(`${mailpit}/messages`).then((r) => r.json()).catch(() => ({ messages: [] }))
+    const textos = await Promise.all((correos.messages ?? []).map((m) => fetch(`${mailpit}/message/${m.ID}`).then((r) => r.json()).catch(() => ({}))))
+    check('correo del reporte con foto: dice "Foto: sí"', textos.some((t) => (t.Text ?? '').includes('Foto: sí') && (t.Attachments ?? []).length === 0))
+
+    const borrado = wp('post', 'delete', idPostFoto, '--force')
+    const sigue = wp('eval', `echo ${rutaFoto} ? "si" : "no";`)
+    check('borrar el reporte definitivamente borra la foto', borrado.ok && sigue.out.endsWith('no'), sigue.out || sigue.err)
   } finally {
     const todos = creados.flatMap(idsPorCliente)
     if (todos.length) wp('post', 'delete', ...todos, '--force')

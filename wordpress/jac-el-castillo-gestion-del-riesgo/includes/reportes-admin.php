@@ -86,6 +86,15 @@ function gr_pintar_datos_reporte(WP_Post $post): void {
                 </tr>
             <?php endif; ?>
         <?php endforeach; ?>
+        <?php if (gr_ruta_foto($post->ID) !== '') : ?>
+            <tr>
+                <th scope="row">Foto</th>
+                <td>
+                    <img src="<?php echo esc_url(gr_url_foto($post->ID)); ?>" alt="Foto del reporte" style="max-width: 100%; height: auto;">
+                    <p><a href="<?php echo esc_url(gr_url_foto($post->ID)); ?>" target="_blank" rel="noopener noreferrer">Abrir la foto</a></p>
+                </td>
+            </tr>
+        <?php endif; ?>
         <?php if ($meta('gr_lat') !== '' && $meta('gr_lng') !== '') : ?>
             <tr>
                 <th scope="row">Coordenadas</th>

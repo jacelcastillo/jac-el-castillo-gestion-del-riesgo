@@ -12,6 +12,8 @@ Necesitas Docker y pnpm.
 4. `WP_URL=http://localhost:8080 pnpm dev`: corre el sitio nuevo leyendo ese WordPress. Para enviar reportes, agrega `WP_APP_USER=app-gestion-riesgo` y `WP_APP_PASSWORD` con una contraseña de aplicación local (`docker compose -f wordpress/compose.yml run --rm -T wpcli wp user application-password create app-gestion-riesgo next-local --porcelain`).
 5. `pnpm wp:zip`: arma `dist/jac-el-castillo-gestion-del-riesgo.zip` para subirlo desde wp-admin (Plugins, Añadir nuevo, Subir plugin).
 
+Desde la versión 0.3 del plugin, la foto de un reporte se guarda en `wp-content/uploads/gr-reportes`, una carpeta bloqueada por `.htaccess` con nombres al azar. Solo se ve en wp-admin, para quien puede editar el reporte. Si borras un reporte definitivamente, también se borra su foto.
+
 Los correos de aviso de reportes no salen a internet: en local los recoge Mailpit en http://localhost:8025. El correo de destino se cambia en Ajustes, Gestión del riesgo, campo "Correo para avisos de reportes".
 
 Las entradas de la categoría Gestión del riesgo no se muestran en el sitio viejo (inicio, feed, búsqueda ni archivo): quien abre una de ellas llega al sitio nuevo con una redirección. La dirección se cambia en Ajustes, Gestión del riesgo, campo "URL del sitio nuevo" (por defecto https://web.jacelcastillo.com.co). La ruta REST sigue devolviéndolas.

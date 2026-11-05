@@ -88,6 +88,9 @@ function gr_crear_reporte(array $d): int|WP_Error {
         'gr_telefono' => $d['telefono'],
         'gr_creado_celular' => $d['creado'],
     ];
+    if (!empty($d['foto'])) {
+        $meta['gr_foto'] = $d['foto'];
+    }
     foreach (['lat', 'lng', 'precision'] as $clave) {
         if ($d[$clave] !== null) {
             $meta['gr_' . $clave] = (string) $d[$clave];
@@ -123,6 +126,9 @@ function gr_avisar_reporte(int $post_id, array $d): void {
     }
     if ($d['lat'] !== null && $d['lng'] !== null) {
         $lineas[] = 'Mapa: ' . gr_url_mapa($d['lat'], $d['lng']);
+    }
+    if (!empty($d['foto'])) {
+        $lineas[] = 'Foto: sí, se ve en wp-admin';
     }
     $lineas[] = '';
     // get_edit_post_link() sale vacío aquí: el usuario de la app no puede editar reportes.

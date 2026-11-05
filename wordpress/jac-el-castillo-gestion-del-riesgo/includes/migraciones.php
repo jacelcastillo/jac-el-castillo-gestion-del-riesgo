@@ -17,6 +17,10 @@ function gr_migrar(): void {
         gr_migrar_0_2_0();
     }
 
+    if (version_compare($guardada, '0.3.0', '<')) {
+        gr_migrar_0_3_0();
+    }
+
     update_option('gr_version', GR_VERSION);
 }
 
@@ -41,4 +45,8 @@ function gr_migrar_0_2_0(): void {
     foreach (GR_CAPS_ADMIN as $cap) {
         get_role('administrator')?->add_cap($cap);
     }
+}
+
+function gr_migrar_0_3_0(): void {
+    gr_carpeta_fotos();
 }
