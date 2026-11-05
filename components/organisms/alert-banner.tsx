@@ -36,7 +36,7 @@ export function AlertBanner({ alert }: { alert: AlertStatus | null }) {
     return (
       <section
         aria-labelledby="estado-alerta"
-        className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-4 py-3', toneByLevel.verde)}
+        className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 self-start rounded-xl px-4 py-3', toneByLevel.verde)}
       >
         <Icon name={level.icon} className="size-6 shrink-0" />
         <h2 id="estado-alerta" className="text-lg font-bold">

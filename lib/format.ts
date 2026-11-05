@@ -7,6 +7,13 @@ const dateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
   timeZone: siteConfig.timeZone,
 })
 
+const shortDateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  timeZone: siteConfig.timeZone,
+})
+
 const dateTimeFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
   day: 'numeric',
   month: 'short',
@@ -16,9 +23,16 @@ const dateTimeFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
 })
 
 /** Fechas "YYYY-MM-DD" se interpretan a mediodía para evitar saltos de día por zona horaria. */
+const toDate = (isoDate: string) => (isoDate.length === 10 ? new Date(`${isoDate}T12:00:00-05:00`) : new Date(isoDate))
+
 export function formatDate(isoDate: string): string {
-  const date = isoDate.length === 10 ? new Date(`${isoDate}T12:00:00-05:00`) : new Date(isoDate)
-  return dateFormatter.format(date)
+  return dateFormatter.format(toDate(isoDate))
+}
+
+/** "5 jul 2026": es-CO intercala "de" entre las partes, por eso se arma a mano. */
+export function formatShortDate(isoDate: string): string {
+  const parts = Object.fromEntries(shortDateFormatter.formatToParts(toDate(isoDate)).map((p) => [p.type, p.value]))
+  return `${parts.day} ${parts.month} ${parts.year}`
 }
 
 export function formatDateTime(isoDate: string): string {

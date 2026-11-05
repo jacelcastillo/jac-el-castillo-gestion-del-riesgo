@@ -80,6 +80,8 @@ export interface Notice {
   summary: string
   /** Fecha ISO (YYYY-MM-DD). */
   date: string
+  /** `date` es la fecha de publicación, no la de un evento. */
+  published: boolean
   time?: string
   place?: string
   /** Entrada en el sitio principal. */

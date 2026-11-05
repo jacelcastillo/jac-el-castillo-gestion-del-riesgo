@@ -64,6 +64,7 @@ export const uiCopy = {
   },
   notices: {
     date: 'Fecha',
+    published: 'Publicado el',
     place: 'Lugar',
     time: 'Hora',
     empty: 'No hay avisos por ahora.',

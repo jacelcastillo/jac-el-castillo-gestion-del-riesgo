@@ -19,20 +19,22 @@ interface HomeTemplateProps {
 export function HomeTemplate({ alert, notices, contacts, committee }: HomeTemplateProps) {
   return (
     <div className="flex flex-col gap-10">
-      <LandingHero copy={pageCopy.home} alert={alert} />
+      <LandingHero copy={pageCopy.home} alert={alert} phones={contacts.slice(1, FEATURED_CONTACTS)} />
       <LatestNotices notices={notices} />
-      <LandingSection
-        id="telefonos"
-        title={uiCopy.home.emergencyPhonesTitle}
-        icon="phone"
-        seeAll={{ href: '/contactos', label: uiCopy.home.seeAllPhones }}
-      >
-        <ul className="grid gap-3 lg:grid-cols-3">
-          {contacts.slice(0, FEATURED_CONTACTS).map((contact) => (
-            <ContactCard key={contact.id} contact={contact} />
-          ))}
-        </ul>
-      </LandingSection>
+      <div className="lg:hidden">
+        <LandingSection
+          id="telefonos"
+          title={uiCopy.home.emergencyPhonesTitle}
+          icon="phone"
+          seeAll={{ href: '/contactos', label: uiCopy.home.seeAllPhones }}
+        >
+          <ul className="grid gap-3">
+            {contacts.slice(0, FEATURED_CONTACTS).map((contact) => (
+              <ContactCard key={contact.id} contact={contact} />
+            ))}
+          </ul>
+        </LandingSection>
+      </div>
       <LandingSection
         id="la-jac"
         title={uiCopy.home.aboutTitle}

@@ -12,6 +12,7 @@ import type {
 export interface Content {
   alert: AlertStatus | null
   notices: Notice[]
+  upcoming: Notice[]
   contacts: Contact[]
   committee: CommitteeMember[]
 }
@@ -133,6 +134,7 @@ function toNotice(raw: Record<string, unknown>): NoticeEntry | null {
       title,
       summary: text(raw.resumen),
       date: dayFormatter.format(dateMs),
+      published: eventAt === null,
       time: eventAt === null ? undefined : timeFormatter.format(eventAt).replace(/\s/g, ' '),
       place: place === '' ? undefined : place,
       href,
@@ -183,10 +185,12 @@ export function toContent(json: unknown, now: Date = new Date()): Content {
     })
   }
 
-  const notices = sortNotices(
+  const sorted = sortNotices(
     list(root.avisos).flatMap((raw) => toNotice(raw) ?? []),
     now,
-  ).map((entry) => entry.notice)
+  )
+  const notices = sorted.map((entry) => entry.notice)
+  const upcoming = sorted.filter((entry) => entry.eventAt !== null && entry.eventAt >= now.getTime()).map((entry) => entry.notice)
 
-  return { alert: toAlert(root.alerta), notices, contacts, committee }
+  return { alert: toAlert(root.alerta), notices, upcoming, contacts, committee }
 }

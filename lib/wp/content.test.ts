@@ -71,6 +71,30 @@ describe('notices', () => {
     assert.deepEqual(notices.map((n) => n.title), ['soon event', 'later event', 'new', 'old', 'past event'])
   })
 
+  it('upcoming keeps only future events in order', () => {
+    const { upcoming } = toContent(
+      {
+        avisos: [
+          aviso({ id: 1, titulo: 'no date' }),
+          aviso({ id: 2, titulo: 'past', evento: { tipo: 'taller', fecha: '2026-10-30T09:00', lugar: '' } }),
+          aviso({ id: 3, titulo: 'later', evento: { tipo: 'simulacro', fecha: '2026-12-01T09:00', lugar: '' } }),
+          aviso({ id: 4, titulo: 'soon', evento: { tipo: 'simulacro', fecha: '2026-11-19T09:00', lugar: '' } }),
+        ],
+      },
+      NOW,
+    )
+    assert.deepEqual(upcoming.map((n) => n.title), ['soon', 'later'])
+  })
+
+  it('published is true only without an event date', () => {
+    const [plain, event] = noticesOf([
+      aviso({ id: 1 }),
+      aviso({ id: 2, evento: { tipo: 'simulacro', fecha: '2026-11-19T09:00', lugar: '' } }),
+    ]).sort((a, b) => Number(b.published) - Number(a.published))
+    assert.equal(plain.published, true)
+    assert.equal(event.published, false)
+  })
+
   it('sortNotices orders by event ascending then publish descending', () => {
     const items = [
       { eventAt: null, publishedAt: 1 },
@@ -127,7 +151,7 @@ describe('contacts', () => {
 describe('malformed input', () => {
   it('returns empty content', () => {
     for (const input of ['text', [], null, 42, {}, { avisos: 'x', contactos: {}, alerta: 'x' }]) {
-      assert.deepEqual(toContent(input, NOW), { alert: null, notices: [], contacts: [], committee: [] })
+      assert.deepEqual(toContent(input, NOW), { alert: null, notices: [], upcoming: [], contacts: [], committee: [] })
     }
   })
 })

@@ -6,11 +6,12 @@ import type { AlertStatus, CommitteeMember, Contact, Notice } from '@/types/cont
 export interface ContentService {
   getCurrentAlert(): Promise<AlertStatus | null>
   getNotices(options?: { limit?: number }): Promise<Notice[]>
+  getUpcomingNotices(options?: { limit?: number }): Promise<Notice[]>
   getContacts(): Promise<Contact[]>
   getCommittee(): Promise<CommitteeMember[]>
 }
 
-const EMPTY: Content = { alert: null, notices: [], contacts: [], committee: [] }
+const EMPTY: Content = { alert: null, notices: [], upcoming: [], contacts: [], committee: [] }
 
 const loadContent = cache(async (): Promise<Content> => {
   try {
@@ -24,6 +25,7 @@ const loadContent = cache(async (): Promise<Content> => {
 export const contentService: ContentService = {
   getCurrentAlert: async () => (await loadContent()).alert,
   getNotices: async ({ limit } = {}) => (await loadContent()).notices.slice(0, limit),
+  getUpcomingNotices: async ({ limit } = {}) => (await loadContent()).upcoming.slice(0, limit),
   getContacts: async () => (await loadContent()).contacts,
   getCommittee: async () => (await loadContent()).committee,
 }

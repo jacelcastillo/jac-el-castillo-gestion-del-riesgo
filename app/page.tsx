@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export default async function HomePage() {
   const [alert, notices, committee] = await Promise.all([
     contentService.getCurrentAlert(),
-    contentService.getNotices({ limit: 3 }),
+    contentService.getUpcomingNotices({ limit: 3 }),
     contentService.getCommittee(),
   ])
   return <HomeTemplate alert={alert} notices={notices} contacts={contacts} committee={committee} />

@@ -1,7 +1,7 @@
 import { Calendar, Clock, MapPin } from 'lucide-react'
 import { noticeKinds } from '@/config/notices'
 import { uiCopy } from '@/config/ui-copy'
-import { formatDate } from '@/lib/format'
+import { formatDate, formatShortDate } from '@/lib/format'
 import type { Notice } from '@/types/content'
 import { IconBadge, type IconBadgeTone } from '@/components/atoms/icon-badge'
 
@@ -20,7 +20,7 @@ export function NoticeCard({
 }) {
   const kind = noticeKinds.find((item) => item.id === notice.kind)
   const details = [
-    { icon: Calendar, label: uiCopy.notices.date, value: formatDate(notice.date) },
+    !notice.published && { icon: Calendar, label: uiCopy.notices.date, value: formatDate(notice.date) },
     notice.time && { icon: Clock, label: uiCopy.notices.time, value: notice.time },
     notice.place && { icon: MapPin, label: uiCopy.notices.place, value: notice.place },
   ].filter(Boolean) as Array<{ icon: typeof Calendar; label: string; value: string }>
@@ -41,6 +41,11 @@ export function NoticeCard({
             </div>
           ))}
         </dl>
+        {notice.published && (
+          <p className="text-sm text-muted-foreground">
+            {uiCopy.notices.published} {formatShortDate(notice.date)}
+          </p>
+        )}
         <a
           href={notice.href}
           rel="noopener"
