@@ -7,7 +7,7 @@ export const siteConfig = {
   description:
     'Aprende a prevenir, reaccionar y recuperarte ante emergencias en El Castillo. Reporta incidentes, conoce los riesgos del sector y ten a mano los números de emergencia.',
   url: 'https://gestionriesgo.jacelcastillo.com.co',
-  mainSiteUrl: 'https://jacelcastillo.com.co',
+  mainSiteUrl: 'https://web.jacelcastillo.com.co',
   locale: 'es-CO',
   timeZone: 'America/Bogota',
   themeColor: '#1f3d9e',

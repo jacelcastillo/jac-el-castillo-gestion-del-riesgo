@@ -89,7 +89,7 @@ describe('notices', () => {
   it('drops a notice with an invalid link and builds href from the pathname', () => {
     const notices = noticesOf([aviso({ id: 1, link: 'not a url' }), aviso({ id: 2, link: 'javascript:alert(1)' }), aviso({ id: 3 })])
     assert.equal(notices.length, 1)
-    assert.equal(notices[0].href, 'https://jacelcastillo.com.co/simulacro/')
+    assert.equal(notices[0].href, 'https://web.jacelcastillo.com.co/simulacro/')
   })
 
   it('keeps markup as plain text', () => {

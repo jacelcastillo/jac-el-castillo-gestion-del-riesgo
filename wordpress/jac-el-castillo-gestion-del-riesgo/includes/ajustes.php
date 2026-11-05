@@ -2,6 +2,7 @@
 defined('ABSPATH') || exit;
 
 const GR_NIVELES = ['verde', 'amarilla', 'naranja', 'roja'];
+const GR_URL_SITIO_NUEVO_DEFECTO = 'https://web.jacelcastillo.com.co';
 
 add_action('admin_init', 'gr_registrar_ajustes');
 add_action('admin_menu', 'gr_agregar_pagina_ajustes');
@@ -13,6 +14,21 @@ function gr_registrar_ajustes(): void {
         'default' => [],
         'show_in_rest' => false,
     ]);
+    register_setting('gr_ajustes', 'gr_url_sitio_nuevo', [
+        'type' => 'string',
+        'sanitize_callback' => 'gr_sanear_url_sitio_nuevo',
+        'default' => GR_URL_SITIO_NUEVO_DEFECTO,
+        'show_in_rest' => false,
+    ]);
+}
+
+function gr_sanear_url_sitio_nuevo(mixed $entrada): string {
+    $url = is_string($entrada) ? esc_url_raw(trim($entrada), ['https']) : '';
+    return untrailingslashit($url !== '' ? $url : GR_URL_SITIO_NUEVO_DEFECTO);
+}
+
+function gr_url_sitio_nuevo(): string {
+    return gr_sanear_url_sitio_nuevo(get_option('gr_url_sitio_nuevo', GR_URL_SITIO_NUEVO_DEFECTO));
 }
 
 function gr_sanear_alerta(mixed $entrada): array {
@@ -80,6 +96,13 @@ function gr_pintar_ajustes(): void {
                 <tr>
                     <th scope="row"><label for="gr_fuente">Fuente</label></th>
                     <td><input type="text" id="gr_fuente" name="gr_alerta[fuente]" class="regular-text" maxlength="120" value="<?php echo esc_attr((string) ($alerta['fuente'] ?? '')); ?>"></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gr_url_sitio_nuevo">URL del sitio nuevo</label></th>
+                    <td>
+                        <input type="url" id="gr_url_sitio_nuevo" name="gr_url_sitio_nuevo" class="regular-text" placeholder="<?php echo esc_attr(GR_URL_SITIO_NUEVO_DEFECTO); ?>" value="<?php echo esc_attr(gr_url_sitio_nuevo()); ?>">
+                        <p class="description">Las entradas de la categoría Gestión del riesgo no se ven en este sitio: quien las abre aquí llega a esta dirección. Debe empezar por https://.</p>
+                    </td>
                 </tr>
             </table>
             <?php if (!empty($alerta['actualizada']) && is_string($alerta['actualizada'])) : ?>
