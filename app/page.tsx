@@ -1,6 +1,14 @@
 import { contacts } from '@/config/contacts'
+import { contentService } from '@/lib/services/content-service'
 import { HomeTemplate } from '@/components/templates/home-template'
 
-export default function HomePage() {
-  return <HomeTemplate contacts={contacts} />
+export const dynamic = 'force-dynamic'
+
+export default async function HomePage() {
+  const [alert, notices, committee] = await Promise.all([
+    contentService.getCurrentAlert(),
+    contentService.getNotices({ limit: 3 }),
+    contentService.getCommittee(),
+  ])
+  return <HomeTemplate alert={alert} notices={notices} contacts={contacts} committee={committee} />
 }

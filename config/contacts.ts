@@ -1,4 +1,10 @@
+import type { IconName } from '@/lib/icons'
 import type { Contact, ContactGroup } from '@/types/content'
+
+export const wpContactIcons: Record<'jac' | 'sector', IconName> = {
+  jac: 'building',
+  sector: 'users',
+}
 
 export const contactGroups: ContactGroup[] = [
   {

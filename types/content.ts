@@ -28,8 +28,8 @@ export interface AlertStatus {
   level: AlertLevelId
   title: string
   description: string
-  updatedAt: string
-  source: string
+  updatedAt?: string
+  source?: string
 }
 
 export type RiskPhaseId = 'antes' | 'durante' | 'despues'
@@ -82,6 +82,8 @@ export interface Notice {
   date: string
   time?: string
   place?: string
+  /** Entrada en el sitio principal. */
+  href: string
 }
 
 export interface NoticeKindDefinition {

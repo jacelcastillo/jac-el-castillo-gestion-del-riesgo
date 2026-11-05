@@ -22,6 +22,7 @@ export const bottomNavigation: NavItem[] = [
 /** Navegación del encabezado en computador. */
 export const mainNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
+  { href: '/avisos', label: 'Avisos', icon: 'megaphone' },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
 

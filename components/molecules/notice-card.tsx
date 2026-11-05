@@ -11,7 +11,13 @@ const toneByKind: Record<Notice['kind'], IconBadgeTone> = {
   taller: 'success',
 }
 
-export function NoticeCard({ notice }: { notice: Notice }) {
+export function NoticeCard({
+  notice,
+  headingLevel: Heading = 'h3',
+}: {
+  notice: Notice
+  headingLevel?: 'h2' | 'h3'
+}) {
   const kind = noticeKinds.find((item) => item.id === notice.kind)
   const details = [
     { icon: Calendar, label: uiCopy.notices.date, value: formatDate(notice.date) },
@@ -24,7 +30,7 @@ export function NoticeCard({ notice }: { notice: Notice }) {
       {kind && <IconBadge name={kind.icon} tone={toneByKind[notice.kind]} />}
       <div className="flex flex-1 flex-col gap-2">
         {kind && <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">{kind.label}</p>}
-        <h3 className="text-pretty text-lg font-bold leading-snug text-card-foreground">{notice.title}</h3>
+        <Heading className="text-pretty text-lg font-bold leading-snug text-card-foreground">{notice.title}</Heading>
         <p className="text-base leading-relaxed text-muted-foreground">{notice.summary}</p>
         <dl className="flex flex-col gap-1.5 pt-1 text-base">
           {details.map(({ icon: DetailIcon, label, value }) => (
@@ -35,6 +41,13 @@ export function NoticeCard({ notice }: { notice: Notice }) {
             </div>
           ))}
         </dl>
+        <a
+          href={notice.href}
+          rel="noopener"
+          className="inline-flex min-h-11 items-center self-start text-base font-semibold text-primary underline-offset-4 outline-none hover:underline focus-visible:ring-4 focus-visible:ring-ring/50"
+        >
+          {uiCopy.notices.readMore}
+        </a>
       </div>
     </article>
   )

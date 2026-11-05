@@ -20,7 +20,7 @@ export function NoticesFeed({ notices }: { notices: Notice[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div role="group" aria-label="Filtrar avisos" className="flex flex-wrap gap-2">
+      <div role="group" aria-label={uiCopy.notices.filterLabel} className="flex flex-wrap gap-2">
         {filters.map((item) => {
           const kind = noticeKinds.find((k) => k.id === item.id)
           const active = filter === item.id
@@ -49,7 +49,7 @@ export function NoticesFeed({ notices }: { notices: Notice[] }) {
         <ul className="flex flex-col gap-3" aria-live="polite">
           {visible.map((notice) => (
             <li key={notice.id}>
-              <NoticeCard notice={notice} />
+              <NoticeCard notice={notice} headingLevel="h2" />
             </li>
           ))}
         </ul>

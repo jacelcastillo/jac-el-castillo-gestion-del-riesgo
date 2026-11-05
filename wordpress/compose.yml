@@ -1,0 +1,57 @@
+name: jac-gr
+
+x-wp-env: &wp-env
+  WORDPRESS_DB_HOST: db
+  WORDPRESS_DB_USER: wp
+  WORDPRESS_DB_PASSWORD: wp-local
+  WORDPRESS_DB_NAME: wp
+
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: wp
+      MARIADB_USER: wp
+      MARIADB_PASSWORD: wp-local
+      MARIADB_ROOT_PASSWORD: root-local
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  wordpress:
+    image: wordpress:7.1-php8.3-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      <<: *wp-env
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_ENVIRONMENT_TYPE', 'local');
+    volumes:
+      - wp:/var/www/html
+      - ./jac-el-castillo-gestion-del-riesgo:/var/www/html/wp-content/plugins/jac-el-castillo-gestion-del-riesgo:ro
+
+  wpcli:
+    image: wordpress:cli
+    profiles: ["tools"]
+    user: "33:33"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      <<: *wp-env
+      HOME: /tmp
+    volumes:
+      - wp:/var/www/html
+      - ./jac-el-castillo-gestion-del-riesgo:/var/www/html/wp-content/plugins/jac-el-castillo-gestion-del-riesgo:ro
+      - ./dev:/dev-scripts:ro
+
+volumes:
+  db:
+  wp:

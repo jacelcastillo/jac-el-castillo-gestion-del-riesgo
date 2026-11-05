@@ -12,8 +12,45 @@ const toneByLevel: Record<AlertLevelId, string> = {
   roja: 'bg-destructive text-destructive-foreground',
 }
 
-export function AlertBanner({ alert }: { alert: AlertStatus }) {
+export function AlertBanner({ alert }: { alert: AlertStatus | null }) {
+  if (!alert) {
+    return (
+      <section
+        aria-labelledby="estado-alerta"
+        className="flex items-start gap-3 rounded-2xl border-2 border-border bg-card p-5 text-card-foreground"
+      >
+        <Icon name="alert" className="mt-0.5 size-7 shrink-0 text-muted-foreground" />
+        <div className="flex flex-col gap-1">
+          <h2 id="estado-alerta" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            {uiCopy.alert.currentLabel}
+          </h2>
+          <p className="text-lg font-semibold leading-snug">{uiCopy.alert.unavailable}</p>
+        </div>
+      </section>
+    )
+  }
+
   const level = alertLevels[alert.level]
+
+  if (alert.level === 'verde') {
+    return (
+      <section
+        aria-labelledby="estado-alerta"
+        className={cn('flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl px-4 py-3', toneByLevel.verde)}
+      >
+        <Icon name={level.icon} className="size-6 shrink-0" />
+        <h2 id="estado-alerta" className="text-lg font-bold">
+          {uiCopy.alert.none}
+        </h2>
+        {alert.updatedAt && (
+          <p className="text-sm opacity-90">
+            {uiCopy.alert.updated}: {formatDateTime(alert.updatedAt)}
+          </p>
+        )}
+      </section>
+    )
+  }
+
   return (
     <section
       aria-labelledby="estado-alerta"
@@ -26,16 +63,20 @@ export function AlertBanner({ alert }: { alert: AlertStatus }) {
           <h2 id="estado-alerta" className="text-balance text-2xl font-bold leading-tight">
             {level.label}
           </h2>
-          <p className="text-lg font-semibold leading-snug">{alert.title}</p>
+          {alert.title && <p className="text-lg font-semibold leading-snug">{alert.title}</p>}
         </div>
       </div>
-      <p className="text-base leading-relaxed">{alert.description}</p>
+      {alert.description && <p className="text-base leading-relaxed">{alert.description}</p>}
       <p className="rounded-xl bg-background/20 p-3 text-base font-semibold leading-relaxed">
         {uiCopy.alert.whatToDo}: {level.whatToDo}
       </p>
-      <p className="text-sm opacity-90">
-        {uiCopy.alert.updated}: {formatDateTime(alert.updatedAt)} · {uiCopy.alert.source}: {alert.source}
-      </p>
+      {(alert.updatedAt || alert.source) && (
+        <p className="text-sm opacity-90">
+          {alert.updatedAt && `${uiCopy.alert.updated}: ${formatDateTime(alert.updatedAt)}`}
+          {alert.updatedAt && alert.source && ' · '}
+          {alert.source && `${uiCopy.alert.source}: ${alert.source}`}
+        </p>
+      )}
     </section>
   )
 }

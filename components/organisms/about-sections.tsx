@@ -30,7 +30,7 @@ export function AboutSections({ about }: { about: AboutContent }) {
           {about.committee.title}
         </SectionHeading>
         <p className="text-base leading-relaxed text-muted-foreground">{about.committee.description}</p>
-        {members && (
+        {members && members.length > 0 && (
           <ul className="grid gap-3 sm:grid-cols-2">
             {members.map((member) => (
               <li key={member.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
