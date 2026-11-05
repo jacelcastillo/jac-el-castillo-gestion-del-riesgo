@@ -28,6 +28,10 @@ export function NavLink({ item, active, onNavigate, className }: NavLinkProps) {
   )
 }
 
-export function isActivePath(pathname: string, href: string) {
+function matchesPath(pathname: string, href: string) {
   return href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`)
+}
+
+export function isActivePath(pathname: string, item: Pick<NavItem, 'href' | 'match'>) {
+  return [item.href, ...(item.match ?? [])].some((href) => matchesPath(pathname, href))
 }

@@ -2,6 +2,7 @@
 
 import { PartyPopper, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { KIT_STORAGE_KEY, kitItemIds } from '@/config/preparedness'
 import { uiCopy } from '@/config/ui-copy'
 import { useChecklist } from '@/hooks/use-checklist'
 import type { KitCategory } from '@/types/content'
@@ -10,10 +11,7 @@ import { CheckItem } from '@/components/molecules/check-item'
 import { ProgressMeter } from '@/components/molecules/progress-meter'
 
 export function EmergencyKit({ categories }: { categories: KitCategory[] }) {
-  const kit = useChecklist(
-    'jac-kit-emergencia',
-    categories.flatMap((category) => category.items.map((item) => item.id)),
-  )
+  const kit = useChecklist(KIT_STORAGE_KEY, kitItemIds)
 
   return (
     <section aria-labelledby="kit-emergencia" className="flex flex-col gap-4">
@@ -21,7 +19,7 @@ export function EmergencyKit({ categories }: { categories: KitCategory[] }) {
         {uiCopy.prepare.kitTitle}
       </SectionHeading>
       <p className="text-base leading-relaxed text-muted-foreground">{uiCopy.prepare.kitIntro}</p>
-      <div className="sticky top-16 z-10 -mx-1 rounded-xl bg-background/95 p-1 backdrop-blur">
+      <div className="sticky top-0 z-10 -mx-1 rounded-xl bg-background/95 p-1 backdrop-blur">
         <ProgressMeter label={uiCopy.prepare.progressLabel} value={kit.doneCount} max={kit.total} />
       </div>
       {kit.isComplete && (

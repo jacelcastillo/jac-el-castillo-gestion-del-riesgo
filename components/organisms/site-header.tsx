@@ -18,7 +18,7 @@ export function SiteHeader() {
           <ul className="flex items-center gap-1">
             {mainNavigation.map((item) => (
               <li key={item.href}>
-                <NavLink item={item} active={isActivePath(pathname, item.href)} />
+                <NavLink item={item} active={isActivePath(pathname, item)} />
               </li>
             ))}
           </ul>

@@ -1,42 +1,78 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
 const PREFIX = 'jac-el-castillo:'
 
-/**
- * Estado que se guarda en el dispositivo (localStorage). Se usa solo para
- * preferencias y avances personales, como el checklist del kit.
- */
-export function usePersistedState<T>(key: string, initialValue: T) {
-  const storageKey = PREFIX + key
-  const [value, setValue] = useState<T>(initialValue)
-  const [isLoaded, setIsLoaded] = useState(false)
+const listeners = new Set<() => void>()
+const memory = new Map<string, string>()
+const parsedCache = new Map<string, { raw: string; value: unknown }>()
 
-  useEffect(() => {
-    try {
-      const stored = window.localStorage.getItem(storageKey)
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage is read after hydration to avoid a mismatch
-      if (stored !== null) setValue(JSON.parse(stored) as T)
-    } catch {
-      // Almacenamiento no disponible (modo privado): se usa el valor inicial.
-    }
-    setIsLoaded(true)
-  }, [storageKey])
+function notify() {
+  listeners.forEach((listener) => listener())
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  window.addEventListener('storage', listener)
+  return () => {
+    listeners.delete(listener)
+    window.removeEventListener('storage', listener)
+  }
+}
+
+function readRaw(storageKey: string): string | null {
+  const fallback = memory.get(storageKey)
+  if (fallback !== undefined) return fallback
+  try {
+    return window.localStorage.getItem(storageKey)
+  } catch {
+    return null
+  }
+}
+
+function writeRaw(storageKey: string, raw: string) {
+  try {
+    window.localStorage.setItem(storageKey, raw)
+    memory.delete(storageKey)
+  } catch {
+    memory.set(storageKey, raw)
+  }
+}
+
+const subscribeNothing = () => () => {}
+
+/**
+ * Estado guardado en el dispositivo (localStorage). `parse` debe ser seguro ante
+ * datos dañados y `initialValue` debe ser una referencia estable.
+ */
+export function usePersistedState<T>(key: string, initialValue: T, parse: (raw: string) => T) {
+  const storageKey = PREFIX + key
+
+  const read = useCallback((): T => {
+    const raw = readRaw(storageKey)
+    if (raw === null) return initialValue
+    const cached = parsedCache.get(storageKey)
+    if (cached?.raw === raw) return cached.value as T
+    const value = parse(raw)
+    parsedCache.set(storageKey, { raw, value })
+    return value
+  }, [storageKey, initialValue, parse])
+
+  const value = useSyncExternalStore(subscribe, read, () => initialValue)
+  const isLoaded = useSyncExternalStore(
+    subscribeNothing,
+    () => true,
+    () => false,
+  )
 
   const update = useCallback(
     (next: T | ((previous: T) => T)) => {
-      setValue((previous) => {
-        const resolved = next instanceof Function ? next(previous) : next
-        try {
-          window.localStorage.setItem(storageKey, JSON.stringify(resolved))
-        } catch {
-          // Sin espacio o sin permiso: el avance vive solo en esta sesión.
-        }
-        return resolved
-      })
+      const resolved = next instanceof Function ? next(read()) : next
+      writeRaw(storageKey, JSON.stringify(resolved))
+      notify()
     },
-    [storageKey],
+    [storageKey, read],
   )
 
   return [value, update, isLoaded] as const

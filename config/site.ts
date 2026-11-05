@@ -14,14 +14,18 @@ export const siteConfig = {
 } as const
 
 /** Barra inferior fija en móvil. */
+const learnMatch = ['/riesgos', '/preparate']
+
 export const bottomNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
+  { href: '/aprende', label: 'Aprende', icon: 'book', match: learnMatch },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
 
 /** Navegación del encabezado en computador. */
 export const mainNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
+  { href: '/aprende', label: 'Aprende', icon: 'book', match: learnMatch },
   { href: '/avisos', label: 'Avisos', icon: 'megaphone' },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
@@ -31,6 +35,10 @@ export const pageCopy = {
     title: 'Juntos cuidamos El Castillo',
     intro:
       'Aquí encuentras lo necesario para prevenir, actuar a tiempo y recuperarnos como comunidad.',
+  },
+  learn: {
+    title: 'Aprende',
+    intro: 'Conoce los riesgos de El Castillo y prepara a tu familia para actuar a tiempo.',
   },
   risks: {
     title: 'Conoce tus riesgos',

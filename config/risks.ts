@@ -180,6 +180,7 @@ export const risks: Risk[] = [
       despues: [
         'No reconectes la energía si hay agua o daños visibles.',
         'Reporta postes y cables en mal estado a la JAC.',
+        'Haz revisar la instalación eléctrica por un técnico antes de volver a usarla.',
       ],
     },
   },

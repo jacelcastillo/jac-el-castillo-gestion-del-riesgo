@@ -4,10 +4,12 @@ interface ProgressMeterProps {
   label: string
   value: number
   max: number
+  /** Reemplaza el conteo por defecto. */
+  valueLabel?: string
   className?: string
 }
 
-export function ProgressMeter({ label, value, max, className }: ProgressMeterProps) {
+export function ProgressMeter({ label, value, max, valueLabel, className }: ProgressMeterProps) {
   const percent = max === 0 ? 0 : Math.round((value / max) * 100)
   const complete = percent === 100
   return (
@@ -15,7 +17,7 @@ export function ProgressMeter({ label, value, max, className }: ProgressMeterPro
       <div className="flex items-baseline justify-between gap-2 text-base">
         <span className="font-semibold text-foreground">{label}</span>
         <span className="font-bold tabular-nums text-foreground">
-          {value}/{max} · {percent}%
+          {valueLabel ?? `${value}/${max} · ${percent}%`}
         </span>
       </div>
       <div

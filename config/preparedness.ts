@@ -95,3 +95,9 @@ export const emergencyKit: KitCategory[] = [
     ],
   },
 ]
+
+export const KIT_STORAGE_KEY = 'jac-kit-emergencia'
+export const PLAN_STORAGE_KEY = 'jac-plan-familiar'
+
+export const kitItemIds = emergencyKit.flatMap((category) => category.items.map((item) => item.id))
+export const planStepIds = familyPlanSteps.map((step) => step.id)

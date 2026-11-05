@@ -4,6 +4,8 @@ export interface NavItem {
   href: string
   label: string
   icon: IconName
+  /** Otras rutas que también activan este ítem. */
+  match?: string[]
   /** Destaca el ítem (ej. "Reportar" en la barra inferior). */
   highlight?: boolean
 }

@@ -25,6 +25,16 @@ export const uiCopy = {
     seeAll: 'Ver todo',
     aboutTitle: 'La JAC y su comité',
     seeMore: 'Ver más',
+    risksTitle: 'Conoce tus riesgos',
+    preparedTitle: '¿Estás preparado?',
+    kitProgressLabel: 'Tu kit de emergencia',
+    kitOf: 'de',
+    kitContinue: 'Seguir',
+  },
+  learn: {
+    risksTitle: 'Conoce tus riesgos',
+    preparedTitle: 'Prepárate en familia',
+    preparedIntro: 'Haz el plan familiar y arma tu kit de emergencia.',
   },
   alert: {
     currentLabel: 'Estado de alerta actual',

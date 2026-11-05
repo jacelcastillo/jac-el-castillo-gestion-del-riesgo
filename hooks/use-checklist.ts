@@ -1,11 +1,18 @@
 'use client'
 
 import { useCallback, useMemo } from 'react'
+import { parseIdList } from '@/lib/parse-id-list'
 import { usePersistedState } from './use-persisted-state'
+
+const NO_IDS: string[] = []
 
 /** Lista de ítems marcados con progreso, guardada en el dispositivo. */
 export function useChecklist(storageKey: string, allIds: string[]) {
-  const [checkedIds, setCheckedIds, isLoaded] = usePersistedState<string[]>(storageKey, [])
+  const [checkedIds, setCheckedIds, isLoaded] = usePersistedState<string[]>(
+    storageKey,
+    NO_IDS,
+    parseIdList,
+  )
 
   const checked = useMemo(() => new Set(checkedIds), [checkedIds])
 

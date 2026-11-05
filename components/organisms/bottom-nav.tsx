@@ -18,7 +18,7 @@ export function BottomNav() {
           <li key={item.href} className="flex flex-1">
             <NavLink
               item={item}
-              active={isActivePath(pathname, item.href)}
+              active={isActivePath(pathname, item)}
               className="min-h-14 flex-1 flex-col justify-center gap-0.5 px-1 text-xs"
             />
           </li>

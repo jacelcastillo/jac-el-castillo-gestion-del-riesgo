@@ -2,6 +2,7 @@
 
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PLAN_STORAGE_KEY, planStepIds } from '@/config/preparedness'
 import { uiCopy } from '@/config/ui-copy'
 import { useChecklist } from '@/hooks/use-checklist'
 import type { PlanStep } from '@/types/content'
@@ -11,10 +12,7 @@ import { CheckItem } from '@/components/molecules/check-item'
 import { ProgressMeter } from '@/components/molecules/progress-meter'
 
 export function FamilyPlan({ steps }: { steps: PlanStep[] }) {
-  const plan = useChecklist(
-    'jac-plan-familiar',
-    steps.map((step) => step.id),
-  )
+  const plan = useChecklist(PLAN_STORAGE_KEY, planStepIds)
 
   return (
     <section aria-labelledby="plan-familiar" className="flex flex-col gap-4">
