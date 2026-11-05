@@ -1,17 +1,33 @@
 import 'server-only'
 import type { IncidentStatus } from '@/types/incident'
 import type { ReportRequest } from '@/lib/validation/incident-schema'
-import { classifyWpStatus, clientIp, isJsonContentType, mapWpStatus } from './report-mapping'
+import { classifyWpStatus, clientIp, isJsonContentType, mapWpStatus, mapWpStatuses } from './report-mapping'
 
 const MAX_ATTEMPTS = 3
 const ATTEMPT_TIMEOUT_MS = 8_000
 const RETRY_DELAY_MS = 1_500
+const STATUS_TIMEOUT_MS = 8_000
 
 export type ForwardResult =
   | { ok: true; remoteId: string; status: IncidentStatus }
   | { ok: false; status: 400 | 429 | 502 }
 
 type Attempt = ForwardResult | 'retry'
+
+function wpConnection(path: string): { url: URL; headers: Record<string, string> } | null {
+  const { WP_URL, WP_APP_USER, WP_APP_PASSWORD } = process.env
+  if (!WP_URL || !WP_APP_USER || !WP_APP_PASSWORD) {
+    console.error('WP_URL, WP_APP_USER and WP_APP_PASSWORD must be set to reach WordPress')
+    return null
+  }
+  return {
+    url: new URL(path, WP_URL),
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Basic ${Buffer.from(`${WP_APP_USER}:${WP_APP_PASSWORD}`).toString('base64')}`,
+    },
+  }
+}
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -54,32 +70,60 @@ async function attempt(url: URL, init: RequestInit): Promise<Attempt> {
 
 /** WordPress dedupes by the report id, so retrying a request that may have landed is safe. */
 export async function forwardReport(report: ReportRequest, photo: Blob | undefined, headers: Headers): Promise<ForwardResult> {
-  const { WP_URL, WP_APP_USER, WP_APP_PASSWORD } = process.env
-  if (!WP_URL || !WP_APP_USER || !WP_APP_PASSWORD) {
-    console.error('WP_URL, WP_APP_USER and WP_APP_PASSWORD must be set to forward reports')
-    return { ok: false, status: 502 }
-  }
+  const connection = wpConnection('/wp-json/jac-gr/v1/reportes')
+  if (!connection) return { ok: false, status: 502 }
 
-  const url = new URL('/wp-json/jac-gr/v1/reportes', WP_URL)
   const ip = clientIp(headers)
   const body = new FormData()
   body.append('datos', JSON.stringify(report))
   if (photo) body.append('foto', photo, 'foto.jpg')
   const init: RequestInit = {
     method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      Authorization: `Basic ${Buffer.from(`${WP_APP_USER}:${WP_APP_PASSWORD}`).toString('base64')}`,
-      ...(ip ? { 'X-GR-IP': ip } : {}),
-    },
+    headers: { ...connection.headers, ...(ip ? { 'X-GR-IP': ip } : {}) },
     body,
     cache: 'no-store',
   }
 
   for (let index = 0; index < MAX_ATTEMPTS; index++) {
     if (index > 0) await sleep(RETRY_DELAY_MS)
-    const result = await attempt(url, init)
+    const result = await attempt(connection.url, init)
     if (result !== 'retry') return result
   }
   return { ok: false, status: 502 }
+}
+
+export type StatusesResult = { ok: true; statuses: Record<string, IncidentStatus> } | { ok: false; status: 400 | 502 }
+
+/** One attempt: the app asks again on its own schedule. */
+export async function fetchStatuses(ids: string[]): Promise<StatusesResult> {
+  const connection = wpConnection('/wp-json/jac-gr/v1/reportes/estado')
+  if (!connection) return { ok: false, status: 502 }
+
+  let res: Response
+  try {
+    res = await fetch(connection.url, {
+      method: 'POST',
+      headers: { ...connection.headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(STATUS_TIMEOUT_MS),
+    })
+  } catch (error) {
+    console.warn('WordPress status request failed', error)
+    return { ok: false, status: 502 }
+  }
+
+  const contentType = res.headers.get('content-type')
+  if (!isJsonContentType(contentType)) {
+    console.warn(`anti-bot: WordPress answered ${res.status} ${contentType ?? 'without content type'}`)
+    return { ok: false, status: 502 }
+  }
+  if (res.status === 400) return { ok: false, status: 400 }
+  if (res.status !== 200) {
+    console.warn(`WordPress answered ${res.status} for a status request`)
+    return { ok: false, status: 502 }
+  }
+
+  const statuses = mapWpStatuses(await res.json().catch(() => null))
+  return statuses ? { ok: true, statuses } : { ok: false, status: 502 }
 }

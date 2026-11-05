@@ -10,6 +10,18 @@ export function mapWpStatus(estado: unknown): IncidentStatus | undefined {
   return typeof estado === 'string' ? STATUS_BY_WP_STATE[estado] : undefined
 }
 
+/** `[{ id, estado }]` from WordPress to `{ [id]: status }`; undefined when the body is not a list. Unknown states are skipped. */
+export function mapWpStatuses(body: unknown): Record<string, IncidentStatus> | undefined {
+  if (!Array.isArray(body)) return undefined
+  const statuses: Record<string, IncidentStatus> = {}
+  for (const row of body) {
+    const { id, estado } = (row ?? {}) as { id?: unknown; estado?: unknown }
+    const status = mapWpStatus(estado)
+    if (typeof id === 'string' && status) statuses[id] = status
+  }
+  return statuses
+}
+
 export function clientIp(headers: Headers): string | undefined {
   const forwarded = headers.get('x-forwarded-for')?.split(',')[0]?.trim()
   return forwarded || headers.get('x-real-ip')?.trim() || undefined

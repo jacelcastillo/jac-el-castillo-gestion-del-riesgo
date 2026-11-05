@@ -6,16 +6,15 @@ export interface SubmitResult {
   status: IncidentStatus
 }
 
-/**
- * Contrato del backend de reportes.
- * Slice 6 reemplaza `getStatus` por un `getStatuses(ids)` por lotes.
- */
+/** Contrato del backend de reportes. */
 export interface IncidentApi {
   submit(report: IncidentReport): Promise<SubmitResult>
-  getStatus(remoteId: string, report: IncidentReport): Promise<IncidentStatus>
+  /** Estado actual por id de reporte; los ids que el servidor no conoce no vienen en la respuesta. */
+  getStatuses(reportIds: string[]): Promise<Record<string, IncidentStatus>>
 }
 
 const SUBMIT_TIMEOUT_MS = 35_000
+const STATUS_TIMEOUT_MS = 15_000
 const KNOWN_STATUSES: IncidentStatus[] = ['enviado', 'en_atencion', 'cerrado']
 
 /** Envía por el BFF `/api/reportes`; cualquier respuesta que no sea 200 o 201 lanza. */
@@ -39,8 +38,21 @@ export function createHttpIncidentApi(): IncidentApi {
       }
       return { remoteId: body.remoteId, status: body.status }
     },
-    async getStatus(_remoteId, report) {
-      return report.status
+    async getStatuses(ids) {
+      const res = await fetch('/api/reportes/estado', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS),
+      })
+      if (res.status !== 200) throw new Error(`El servidor respondió ${res.status}`)
+
+      const body = (await res.json().catch(() => null)) as Record<string, unknown> | null
+      const statuses: Record<string, IncidentStatus> = {}
+      for (const [id, status] of Object.entries(body ?? {})) {
+        if (KNOWN_STATUSES.includes(status as IncidentStatus)) statuses[id] = status as IncidentStatus
+      }
+      return statuses
     },
   }
 }

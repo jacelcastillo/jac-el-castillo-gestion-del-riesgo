@@ -74,4 +74,56 @@ describe('incident service', () => {
     assert.equal(submittedIds.length, 2)
     assert.equal(new Set(submittedIds).size, 2)
   })
+
+  describe('refreshStatuses', () => {
+    it('asks once for all sent reports and applies the changed statuses', async () => {
+      const repository = createMemoryRepository()
+      const first = await createIncidentService(repository, createMockIncidentApi().api).create(draft)
+      const second = await createIncidentService(repository, createMockIncidentApi().api).create(draft)
+      const { api, statusCalls } = createMockIncidentApi({
+        statuses: { [first.id]: 'en_atencion', [second.id]: 'cerrado' },
+      })
+      const service = createIncidentService(repository, api)
+
+      await service.refreshStatuses()
+
+      assert.equal(statusCalls.length, 1)
+      assert.deepEqual(new Set(statusCalls[0]), new Set([first.id, second.id]))
+      assert.equal((await repository.getById(first.id))?.status, 'en_atencion')
+      assert.equal((await repository.getById(second.id))?.status, 'cerrado')
+    })
+
+    it('leaves a report unchanged when the answer omits its id or the API fails', async () => {
+      const repository = createMemoryRepository()
+      const report = await createIncidentService(repository, createMockIncidentApi().api).create(draft)
+
+      await createIncidentService(repository, createMockIncidentApi().api).refreshStatuses()
+      await createIncidentService(repository, createMockIncidentApi({ statusFailWith: new Error('x') }).api).refreshStatuses()
+
+      assert.equal((await repository.getById(report.id))?.status, 'enviado')
+    })
+
+    it('makes no call when no report is waiting on a status', async () => {
+      const repository = createMemoryRepository()
+      const failing = createIncidentService(repository, createMockIncidentApi({ failWith: new Error('x') }).api)
+      await failing.create(draft)
+      const { api, statusCalls } = createMockIncidentApi()
+
+      await createIncidentService(repository, api).refreshStatuses()
+
+      assert.equal(statusCalls.length, 0)
+    })
+
+    it('makes no second call within 60 seconds', async () => {
+      const repository = createMemoryRepository()
+      await createIncidentService(repository, createMockIncidentApi().api).create(draft)
+      const { api, statusCalls } = createMockIncidentApi()
+      const service = createIncidentService(repository, api)
+
+      await service.refreshStatuses()
+      await service.refreshStatuses()
+
+      assert.equal(statusCalls.length, 1)
+    })
+  })
 })

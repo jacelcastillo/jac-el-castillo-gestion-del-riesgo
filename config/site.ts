@@ -78,6 +78,10 @@ export const pageCopy = {
     title: 'Mis reportes',
     intro: 'Los reportes que has hecho desde este celular y en qué van.',
   },
+  offline: {
+    title: 'Sin conexión',
+    intro: 'Esta página no está guardada en tu celular. Cuando vuelva la señal podrás abrirla.',
+  },
   privacy: {
     title: 'Aviso de privacidad',
     intro: 'Cómo cuidamos los datos que nos compartes al hacer un reporte.',

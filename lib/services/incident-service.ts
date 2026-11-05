@@ -1,5 +1,5 @@
 import type { IncidentRepository } from '../repositories/incident-repository.ts'
-import type { IncidentDraft, IncidentReport } from '../../types/incident.ts'
+import type { IncidentDraft, IncidentReport, IncidentStatus } from '../../types/incident.ts'
 import type { IncidentApi } from './incident-api.ts'
 
 export interface IncidentService {
@@ -13,6 +13,9 @@ export interface IncidentService {
   subscribe(listener: () => void): () => void
 }
 
+const STATUS_REFRESH_INTERVAL_MS = 60_000
+const MAX_STATUS_BATCH = 50
+
 // Node 21+ defines a global navigator without onLine.
 const isOnline = () => typeof navigator === 'undefined' || navigator.onLine !== false
 
@@ -23,6 +26,7 @@ export function createIncidentService(
   const listeners = new Set<() => void>()
   const notify = () => listeners.forEach((listener) => listener())
   let syncing: Promise<number> | null = null
+  let lastStatusRefresh = 0
   const inFlight = new Set<string>()
 
   async function trySubmit(report: IncidentReport): Promise<IncidentReport> {
@@ -85,13 +89,24 @@ export function createIncidentService(
       return syncing
     },
     async refreshStatuses() {
-      if (!isOnline()) return
-      const all = await repository.getAll()
+      if (!isOnline() || Date.now() - lastStatusRefresh < STATUS_REFRESH_INTERVAL_MS) return
+      const open = (await repository.getAll())
+        .filter((report) => report.remoteId && report.status !== 'pendiente' && report.status !== 'cerrado')
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .slice(0, MAX_STATUS_BATCH)
+      if (open.length === 0) return
+
+      lastStatusRefresh = Date.now()
+      let statuses: Record<string, IncidentStatus>
+      try {
+        statuses = await api.getStatuses(open.map((report) => report.id))
+      } catch {
+        return
+      }
       let changed = false
-      for (const report of all) {
-        if (!report.remoteId || report.status === 'cerrado') continue
-        const status = await api.getStatus(report.remoteId, report)
-        if (status !== report.status) {
+      for (const report of open) {
+        const status = statuses[report.id]
+        if (status && status !== report.status) {
           await repository.update(report.id, { status })
           changed = true
         }

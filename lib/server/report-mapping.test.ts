@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { classifyWpStatus, clientIp, isJsonContentType, mapWpStatus } from './report-mapping.ts'
+import { classifyWpStatus, clientIp, isJsonContentType, mapWpStatus, mapWpStatuses } from './report-mapping.ts'
 
 describe('report mapping', () => {
   it('maps WordPress states to app statuses', () => {
@@ -29,5 +29,23 @@ describe('report mapping', () => {
     assert.equal(classifyWpStatus(401), 'misconfigured')
     assert.equal(classifyWpStatus(403), 'misconfigured')
     assert.equal(classifyWpStatus(503), 'retry')
+  })
+
+  it('maps a WordPress status list and skips unknown rows', () => {
+    assert.deepEqual(
+      mapWpStatuses([
+        { id: 'a', estado: 'recibido', actualizado: 'x' },
+        { id: 'b', estado: 'en_atencion' },
+        { id: 'c', estado: 'raro' },
+        { estado: 'cerrado' },
+        null,
+      ]),
+      { a: 'enviado', b: 'en_atencion' },
+    )
+  })
+
+  it('rejects a status body that is not a list', () => {
+    assert.equal(mapWpStatuses({ id: 'a' }), undefined)
+    assert.equal(mapWpStatuses(null), undefined)
   })
 })

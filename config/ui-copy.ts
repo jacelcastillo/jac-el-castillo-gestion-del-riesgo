@@ -9,8 +9,8 @@ export const uiCopy = {
     toLight: 'Cambiar a modo claro',
     toDark: 'Cambiar a modo oscuro',
   },
-  online: 'Con conexión',
-  offline: 'Sin conexión: puedes seguir usando la app',
+  offline: 'Estás sin conexión. La alerta y los avisos pueden no estar al día.',
+  offlinePage: { homeLink: 'Volver al inicio' },
   lifeRisk: {
     message: 'Si hay riesgo para la vida, llama primero al 123.',
     action: 'Llamar al 123',

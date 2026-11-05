@@ -11,12 +11,18 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
+  "worker-src 'self'",
+  "manifest-src 'self'",
 ].join('; ')
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  env: {
+    NEXT_PUBLIC_SW_VERSION: process.env.VERCEL_GIT_COMMIT_SHA ?? `local-${Date.now()}`,
+  },
   async headers() {
     return [
+      { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
       {
         source: '/:path*',
         headers: [

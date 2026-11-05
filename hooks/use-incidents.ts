@@ -18,15 +18,9 @@ function subscribe(onChange: () => void) {
     snapshot = { reports: await service.list(), loaded: true }
     onChange()
   }
-  const syncAndRefresh = () => void service.syncPending().then(refresh)
   const unsubscribe = service.subscribe(() => void refresh())
-  window.addEventListener('online', syncAndRefresh)
   void refresh()
-  syncAndRefresh()
-  return () => {
-    unsubscribe()
-    window.removeEventListener('online', syncAndRefresh)
-  }
+  return unsubscribe
 }
 
 /** Guarda un reporte en el dispositivo y lo envía de una vez si hay conexión. */
@@ -34,7 +28,7 @@ export function useCreateIncident() {
   return useCallback((draft: IncidentDraft) => getIncidentService().create(draft), [])
 }
 
-/** Lee los reportes del dispositivo; reintenta los pendientes al abrir y al volver la conexión. */
+/** Lee los reportes del dispositivo; `sync` reintenta los pendientes a mano. */
 export function useIncidents() {
   const { reports, loaded } = useSyncExternalStore(subscribe, () => snapshot, () => EMPTY)
   const [isSyncing, setIsSyncing] = useState(false)

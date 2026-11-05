@@ -21,3 +21,5 @@ Las entradas de la categoría Gestión del riesgo no se muestran en el sitio vie
 En Vercel el sitio necesita `WP_URL`, `WP_APP_USER` y `WP_APP_PASSWORD` (esta última como Sensitive). La contraseña es una contraseña de aplicación del usuario `app-gestion-riesgo`, con perfil "App Gestión del Riesgo": solo puede enviar reportes y consultar su estado.
 
 Para revisar producción sin escribir nada: `node scripts/check-wp.mjs https://jacelcastillo.com.co --prod`.
+
+El sitio funciona sin señal después de la primera visita: el celular guarda el inicio, Aprende, Reportar, Contactos, Avisos, Mis reportes, Prepárate, Sobre la JAC, la privacidad y cada riesgo (lista en `lib/precache.ts`). Lo que no está guardado muestra la página "Sin conexión". Cada despliegue trae una versión nueva (`VERCEL_GIT_COMMIT_SHA`) y el celular reemplaza su copia guardada al abrir el sitio con señal.
