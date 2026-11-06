@@ -169,3 +169,23 @@ export interface AboutContent {
     detail: string
   }
 }
+
+export type ResourceFormat = 'pdf' | 'word' | 'excel' | 'powerpoint' | 'imagen'
+
+export interface Resource {
+  id: string
+  title: string
+  description: string
+  /** Archivo en WordPress. */
+  href: string
+  sizeBytes: number
+  format: ResourceFormat
+}
+
+export interface ResourceFormatDefinition {
+  label: string
+  icon: IconName
+  /** Texto del enlace: "Abrir PDF", "Ver imagen" o "Descargar". */
+  action: string
+  extensions: string[]
+}

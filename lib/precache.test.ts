@@ -15,6 +15,10 @@ describe('precachePaths', () => {
     assert.ok(paths.includes('/mapa'))
   })
 
+  it('includes the resources page', () => {
+    assert.ok(paths.includes('/recursos'))
+  })
+
   it('has no duplicates', () => {
     assert.equal(new Set(paths).size, paths.length)
   })

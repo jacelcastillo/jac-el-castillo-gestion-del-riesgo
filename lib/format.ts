@@ -1,4 +1,4 @@
-import { siteConfig } from '@/config/site'
+import { siteConfig } from '../config/site.ts'
 
 const dateFormatter = new Intl.DateTimeFormat(siteConfig.locale, {
   weekday: 'long',
@@ -41,4 +41,13 @@ export function formatDateTime(isoDate: string): string {
 
 export function telHref(phone: string): string {
   return `tel:${phone.replace(/\s/g, '')}`
+}
+
+const megabyteFormatter = new Intl.NumberFormat(siteConfig.locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+/** "240 KB" por debajo de 1 MB, "1,5 MB" desde ahí. */
+export function formatFileSize(bytes: number): string {
+  const kilobytes = Math.max(1, Math.round(bytes / 1024))
+  if (kilobytes < 1024) return `${kilobytes} KB`
+  return `${megabyteFormatter.format(bytes / 1024 / 1024)} MB`
 }

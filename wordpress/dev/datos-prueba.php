@@ -119,4 +119,41 @@ foreach ($leer('map-points.json') as $i => $p) {
     ]);
 }
 
+require_once ABSPATH . 'wp-admin/includes/file.php';
+require_once ABSPATH . 'wp-admin/includes/media.php';
+require_once ABSPATH . 'wp-admin/includes/image.php';
+
+function gr_prueba_adjunto(string $nombre, string $contenido): int {
+    $ruta = get_temp_dir() . $nombre;
+    file_put_contents($ruta, $contenido);
+    $id = media_handle_sideload(['name' => $nombre, 'tmp_name' => $ruta], 0);
+    if (is_wp_error($id)) {
+        @unlink($ruta);
+        WP_CLI::error($id->get_error_message());
+    }
+    return $id;
+}
+
+function gr_prueba_recurso(string $marca, string $titulo, int $orden, string $archivo, string $contenido, string $estado = 'publish', string $descripcion = ''): void {
+    if (gr_prueba_existe($marca, 'gr_recurso')) {
+        return;
+    }
+    $adjunto = $contenido === '' ? '' : gr_prueba_adjunto($archivo, $contenido);
+    gr_prueba_crear([
+        'post_type' => 'gr_recurso',
+        'post_title' => $titulo,
+        'post_status' => $estado,
+        'menu_order' => $orden,
+    ], $marca, ['gr_archivo_id' => $adjunto, 'gr_descripcion' => $descripcion]);
+}
+
+$pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n"
+    . "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 200 200]>>endobj\n"
+    . "trailer<</Root 1 0 R/Size 4>>\n%EOF\n";
+$png = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+
+gr_prueba_recurso('recurso-pdf', 'Guía de evacuación (prueba)', 1, 'guia-evacuacion.pdf', $pdf, 'publish', 'Pasos para salir del sector ante una emergencia.');
+gr_prueba_recurso('recurso-png', 'Infografía de sismo (prueba)', 2, 'infografia-sismo.png', $png);
+gr_prueba_recurso('recurso-borrador', 'Recurso en borrador que no debe salir', 3, 'borrador.pdf', $pdf, 'draft');
+
 WP_CLI::success('Datos de prueba cargados.');

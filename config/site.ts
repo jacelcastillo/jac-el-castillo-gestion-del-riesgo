@@ -13,12 +13,12 @@ export const siteConfig = {
   themeColor: '#1f3d9e',
 } as const
 
-/** Barra inferior fija en móvil. */
 const learnMatch = ['/riesgos', '/preparate']
 
+/** Barra inferior fija en móvil. Aprende sigue activo en /recursos porque no tiene ítem propio. */
 export const bottomNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
-  { href: '/aprende', label: 'Aprende', icon: 'book', match: learnMatch },
+  { href: '/aprende', label: 'Aprende', icon: 'book', match: [...learnMatch, '/recursos'] },
   { href: '/reportar', label: 'Reportar', icon: 'siren', highlight: true },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
 ]
@@ -27,6 +27,7 @@ export const bottomNavigation: NavItem[] = [
 export const mainNavigation: NavItem[] = [
   { href: '/', label: 'Inicio', icon: 'home' },
   { href: '/aprende', label: 'Aprende', icon: 'book', match: learnMatch },
+  { href: '/recursos', label: 'Recursos', icon: 'fileText' },
   { href: '/avisos', label: 'Avisos', icon: 'megaphone' },
   { href: '/contactos', label: 'Contactos', icon: 'phone' },
   { href: '/reportar', label: 'Reportar', icon: 'siren', highlight: true },
@@ -77,6 +78,10 @@ export const pageCopy = {
   myReports: {
     title: 'Mis reportes',
     intro: 'Los reportes que has hecho desde este celular y en qué van.',
+  },
+  resources: {
+    title: 'Recursos',
+    intro: 'Guías, formatos e infografías de la JAC para consultar, imprimir o compartir.',
   },
   offline: {
     title: 'Sin conexión',

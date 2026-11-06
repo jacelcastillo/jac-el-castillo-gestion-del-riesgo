@@ -73,7 +73,7 @@ let data = {}
 try {
   data = JSON.parse(cuerpo)
 } catch {}
-check('4 llaves de primer nivel', mismasLlaves(data, ['alerta', 'avisos', 'contactos', 'puntos']), Object.keys(data).join(','))
+check('5 llaves de primer nivel', mismasLlaves(data, ['alerta', 'avisos', 'contactos', 'puntos', 'recursos']), Object.keys(data).join(','))
 
 const prohibidas = llavesProhibidas(data)
 check('ninguna llave de autor, correo o usuario', prohibidas.length === 0, prohibidas.join(','))
@@ -167,6 +167,8 @@ async function revisarLocal() {
       ),
   )
 
+  await revisarRecursos(Array.isArray(data.recursos) ? data.recursos : [])
+
   const riesgo = avisos.find((a) => a.titulo === 'Recomendaciones por temporada de lluvias')
   check('aparece el aviso de riesgo de prueba', Boolean(riesgo))
   const slugRiesgo = new URL(riesgo?.link ?? base).pathname.split('/').filter(Boolean).pop()
@@ -226,9 +228,9 @@ async function revisarLocal() {
   const fotos030 = wp('eval', `${carpetaFotos030} echo json_encode([is_dir($c), file_exists($c . "/.htaccess"), file_exists($c . "/index.php")]);`)
   check('migración 0.3.0: crea la carpeta de fotos con .htaccess e index.php', fotos030.out.endsWith('[true,true,true]'), fotos030.out || fotos030.err)
 
-  wp('option', 'update', 'gr_version', '0.3.0')
-  const version040 = wp('option', 'get', 'gr_version')
-  check('migración 0.4.0: gr_version pasa de 0.3.0 a 0.4.0', version040.ok && version040.out.endsWith('0.4.0'), version040.out || version040.err)
+  wp('option', 'update', 'gr_version', '0.4.0')
+  const version050 = wp('option', 'get', 'gr_version')
+  check('migración 0.5.0: gr_version pasa de 0.4.0 a 0.5.0', version050.ok && version050.out.endsWith('0.5.0'), version050.out || version050.err)
 
   const { cookie } = await iniciarSesionAdmin()
   const pantallaPunto = await fetch(`${base}/wp-admin/post-new.php?post_type=gr_punto`, { headers: { cookie } }).then((r) => r.text())
@@ -236,11 +238,26 @@ async function revisarLocal() {
     'wp-admin: la pantalla de punto tiene el botón Agregar mi ubicación y su línea de estado',
     /<button[^>]*type="button"[^>]*id="gr_agregar_ubicacion"[^>]*>Agregar mi ubicación<\/button>/.test(pantallaPunto) && /id="gr_ubicacion_estado"[^>]*aria-live="polite"/.test(pantallaPunto),
   )
-  check('wp-admin: la pantalla de punto carga ubicacion-punto.js con la versión del plugin', /assets\/ubicacion-punto\.js\?ver=0\.4\.0/.test(pantallaPunto))
+  check('wp-admin: la pantalla de punto carga ubicacion-punto.js con la versión del plugin', /assets\/ubicacion-punto\.js\?ver=0\.5\.0/.test(pantallaPunto))
   const pantallaContacto = await fetch(`${base}/wp-admin/post-new.php?post_type=gr_contacto`, { headers: { cookie } }).then((r) => r.text())
   check('wp-admin: ubicacion-punto.js no se carga en otras pantallas', !pantallaContacto.includes('ubicacion-punto.js'))
   const js = await fetch(`${base}/wp-content/plugins/jac-el-castillo-gestion-del-riesgo/assets/ubicacion-punto.js`)
   check('ubicacion-punto.js se sirve como JavaScript', js.status === 200 && (js.headers.get('content-type') ?? '').includes('javascript'), `${js.status} ${js.headers.get('content-type')}`)
+
+  const pantallaRecurso = await fetch(`${base}/wp-admin/post-new.php?post_type=gr_recurso`, { headers: { cookie } }).then((r) => r.text())
+  check(
+    'wp-admin: la pantalla de recurso tiene el botón Elegir o subir archivo y el selector de medios',
+    /<button[^>]*type="button"[^>]*id="gr_elegir_archivo"[^>]*>Elegir o subir archivo<\/button>/.test(pantallaRecurso) && pantallaRecurso.includes('media-views'),
+  )
+  check('wp-admin: la pantalla de recurso carga recurso-archivo.js con la versión del plugin', /assets\/recurso-archivo\.js\?ver=0\.5\.0/.test(pantallaRecurso))
+  check('wp-admin: recurso-archivo.js ni el selector de medios se cargan en otras pantallas', !pantallaContacto.includes('recurso-archivo.js') && !pantallaContacto.includes('media-views'))
+  const jsRecurso = await fetch(`${base}/wp-content/plugins/jac-el-castillo-gestion-del-riesgo/assets/recurso-archivo.js`)
+  check('recurso-archivo.js se sirve como JavaScript', jsRecurso.status === 200 && (jsRecurso.headers.get('content-type') ?? '').includes('javascript'), `${jsRecurso.status} ${jsRecurso.headers.get('content-type')}`)
+
+  const { texto: archivoViejo } = await pedir('/?post_type=gr_recurso')
+  check('gr_recurso no se ve en el front del WordPress viejo', !archivoViejo.includes('(prueba)'))
+  const { texto: busquedaRecurso } = await pedir(`/?s=${encodeURIComponent('Guía de evacuación')}`)
+  check('búsqueda vieja no lista los recursos', !busquedaRecurso.includes('Guía de evacuación (prueba)'))
 
   const visibles = wp('post', 'list', '--category_name=gestion-del-riesgo', '--post_status=publish', '--format=count')
   check('WP-CLI sigue viendo las entradas de riesgo', visibles.ok && Number(visibles.out) > 0, visibles.out || visibles.err)
@@ -249,6 +266,56 @@ async function revisarLocal() {
 
   console.log(`${fallos ? 'FAIL' : 'OK'} ${fallos} fallos`)
   process.exit(fallos ? 1 : 0)
+}
+
+async function revisarRecursos(recursos) {
+  const llaves = ['id', 'titulo', 'descripcion', 'url', 'tamano', 'formato']
+  const extensiones = { pdf: ['pdf'], word: ['doc', 'docx'], excel: ['xls', 'xlsx'], powerpoint: ['ppt', 'pptx'], imagen: ['jpg', 'jpeg', 'png', 'webp'] }
+  check(
+    'recursos con las llaves del contrato, formato permitido, URL de uploads con su extensión y tamaño mayor que 0',
+    recursos.length > 0 &&
+      recursos.every((r) => {
+        if (!mismasLlaves(r, llaves) || !(r.formato in extensiones)) return false
+        const ruta = new URL(r.url).pathname
+        return ruta.startsWith('/wp-content/uploads/') && extensiones[r.formato].includes(ruta.split('.').pop().toLowerCase()) && Number.isInteger(r.tamano) && r.tamano > 0
+      }),
+    json(recursos),
+  )
+  const pdf = recursos.find((r) => r.titulo === 'Guía de evacuación (prueba)')
+  const png = recursos.find((r) => r.titulo === 'Infografía de sismo (prueba)')
+  check('aparece el recurso PDF de prueba con su descripción', pdf?.formato === 'pdf' && pdf.descripcion !== '', json(pdf))
+  check('aparece el recurso PNG de prueba', png?.formato === 'imagen', json(png))
+  check('recursos en el orden de menu_order', recursos.findIndex((r) => r === pdf) < recursos.findIndex((r) => r === png))
+  check('no aparece el recurso en borrador', !recursos.some((r) => r.titulo.includes('en borrador')))
+
+  const archivoPdf = pdf ? await fetch(pdf.url) : null
+  check('el archivo del recurso PDF se sirve', archivoPdf?.status === 200 && (archivoPdf.headers.get('content-type') ?? '').includes('pdf'), `${archivoPdf?.status} ${archivoPdf?.headers.get('content-type')}`)
+
+  const crear = wp(
+    'eval',
+    `
+    $sin = wp_insert_post(["post_type" => "gr_recurso", "post_title" => "Recurso sin archivo (check-wp)", "post_status" => "publish"]);
+    $ruta = wp_upload_dir()["path"] . "/check-wp.txt";
+    file_put_contents($ruta, "no permitido");
+    $adjunto = wp_insert_attachment(["post_mime_type" => "text/plain", "post_title" => "check-wp", "post_status" => "inherit"], $ruta);
+    $txt = wp_insert_post(["post_type" => "gr_recurso", "post_title" => "Recurso con txt (check-wp)", "post_status" => "publish"]);
+    update_post_meta($txt, "gr_archivo_id", $adjunto);
+    echo json_encode([$sin, $txt, $adjunto]);
+    `,
+  )
+  let ids = []
+  try {
+    ids = JSON.parse(crear.out.split('\n').pop() ?? '')
+  } catch {}
+  try {
+    check('recursos de prueba sin archivo y con .txt creados', ids.length === 3, crear.out || crear.err)
+    const { texto } = await pedir('/wp-json/jac-gr/v1/contenido')
+    check('no aparece el recurso sin archivo ni el que apunta a un .txt', !texto.includes('(check-wp)'))
+  } finally {
+    if (ids.length === 3) {
+      wp('post', 'delete', String(ids[0]), String(ids[1]), String(ids[2]), '--force')
+    }
+  }
 }
 
 async function iniciarSesionAdmin() {

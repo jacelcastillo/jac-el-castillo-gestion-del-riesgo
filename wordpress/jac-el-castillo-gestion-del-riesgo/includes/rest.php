@@ -17,6 +17,7 @@ function gr_contenido(): WP_REST_Response {
         'avisos' => gr_avisos_publicos(),
         'contactos' => gr_contactos_publicos(),
         'puntos' => gr_puntos_publicos(),
+        'recursos' => gr_recursos_publicos(),
     ]);
     $respuesta->header('Cache-Control', 'public, max-age=60');
     return $respuesta;
@@ -105,4 +106,24 @@ function gr_puntos_publicos(): array {
         'referencia' => gr_texto(gr_meta($p->ID, 'gr_referencia'), 120),
         'coordenadas' => gr_parsear_coordenadas(get_post_meta($p->ID, 'gr_coordenadas', true)),
     ], $posts);
+}
+
+function gr_recursos_publicos(): array {
+    $posts = gr_publicados('gr_recurso', ['orderby' => ['menu_order' => 'ASC', 'title' => 'ASC']]);
+    $recursos = [];
+    foreach ($posts as $p) {
+        $archivo = gr_archivo_recurso($p->ID);
+        if ($archivo === null) {
+            continue;
+        }
+        $recursos[] = [
+            'id' => $p->ID,
+            'titulo' => gr_plano(get_the_title($p)),
+            'descripcion' => gr_parrafo(gr_meta($p->ID, 'gr_descripcion'), 300),
+            'url' => $archivo['url'],
+            'tamano' => $archivo['tamano'],
+            'formato' => $archivo['formato'],
+        ];
+    }
+    return $recursos;
 }

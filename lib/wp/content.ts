@@ -1,4 +1,5 @@
 import { wpContactIcons } from '../../config/contacts.ts'
+import { resourceFormats } from '../../config/resources.ts'
 import { siteConfig } from '../../config/site.ts'
 import type {
   AlertLevelId,
@@ -9,6 +10,8 @@ import type {
   MapPointKind,
   Notice,
   NoticeKind,
+  Resource,
+  ResourceFormat,
 } from '../../types/content.ts'
 import { project, type LatLng } from '../map.ts'
 
@@ -19,6 +22,7 @@ export interface Content {
   contacts: Contact[]
   committee: CommitteeMember[]
   points: MapPoint[]
+  resources: Resource[]
 }
 
 export interface Sortable {
@@ -29,6 +33,8 @@ export interface Sortable {
 const ALERT_LEVELS: readonly string[] = ['verde', 'amarilla', 'naranja', 'roja']
 const NOTICE_KINDS: readonly string[] = ['comunicado', 'simulacro', 'taller']
 const POINT_KINDS: readonly string[] = ['encuentro', 'ruta', 'riesgo']
+const RESOURCE_FORMATS = Object.keys(resourceFormats) as ResourceFormat[]
+const UPLOADS_PATH = '/wp-content/uploads/'
 const MIN_PHONE_DIGITS = 7
 
 const dayFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -214,6 +220,31 @@ function toPoints(values: Record<string, unknown>[]): MapPoint[] {
   })
 }
 
+function toFileHref(link: unknown, format: ResourceFormat): string | null {
+  try {
+    const url = new URL(text(link))
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null
+    if (!url.pathname.startsWith(UPLOADS_PATH)) return null
+    const extension = url.pathname.split('.').pop()?.toLowerCase() ?? ''
+    return resourceFormats[format].extensions.includes(extension) ? url.href : null
+  } catch {
+    return null
+  }
+}
+
+function toResources(values: Record<string, unknown>[]): Resource[] {
+  return values.flatMap((raw): Resource[] => {
+    const id = toId(raw.id)
+    const title = text(raw.titulo)
+    const format = text(raw.formato) as ResourceFormat
+    if (id === null || title === '' || !RESOURCE_FORMATS.includes(format)) return []
+    const href = toFileHref(raw.url, format)
+    const sizeBytes = raw.tamano
+    if (href === null || typeof sizeBytes !== 'number' || !Number.isInteger(sizeBytes) || sizeBytes <= 0) return []
+    return [{ id: `wp-${id}`, title, description: text(raw.descripcion), href, sizeBytes, format }]
+  })
+}
+
 export function toContent(json: unknown, now: Date = new Date()): Content {
   const root = isRecord(json) ? json : {}
   const contacts: Contact[] = []
@@ -255,5 +286,13 @@ export function toContent(json: unknown, now: Date = new Date()): Content {
   const notices = sorted.map((entry) => entry.notice)
   const upcoming = sorted.filter((entry) => entry.eventAt !== null && entry.eventAt >= now.getTime()).map((entry) => entry.notice)
 
-  return { alert: toAlert(root.alerta), notices, upcoming, contacts, committee, points: toPoints(list(root.puntos)) }
+  return {
+    alert: toAlert(root.alerta),
+    notices,
+    upcoming,
+    contacts,
+    committee,
+    points: toPoints(list(root.puntos)),
+    resources: toResources(list(root.recursos)),
+  }
 }

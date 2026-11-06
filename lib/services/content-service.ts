@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { toContent, type Content } from '@/lib/wp/content'
 import { wpJson } from '@/lib/wp/client'
-import type { AlertStatus, CommitteeMember, Contact, MapPoint, Notice } from '@/types/content'
+import type { AlertStatus, CommitteeMember, Contact, MapPoint, Notice, Resource } from '@/types/content'
 
 export interface ContentService {
   getCurrentAlert(): Promise<AlertStatus | null>
@@ -11,9 +11,11 @@ export interface ContentService {
   getCommittee(): Promise<CommitteeMember[]>
   /** `null` cuando no se pudo leer WordPress, para no confundirlo con "no hay puntos". */
   getMapPoints(): Promise<MapPoint[] | null>
+  /** `null` cuando no se pudo leer WordPress, para no confundirlo con "no hay recursos". */
+  getResources(): Promise<Resource[] | null>
 }
 
-const EMPTY: Content = { alert: null, notices: [], upcoming: [], contacts: [], committee: [], points: [] }
+const EMPTY: Content = { alert: null, notices: [], upcoming: [], contacts: [], committee: [], points: [], resources: [] }
 
 interface Loaded {
   content: Content
@@ -40,5 +42,9 @@ export const contentService: ContentService = {
   getMapPoints: async () => {
     const { content, available } = await load()
     return available ? content.points : null
+  },
+  getResources: async () => {
+    const { content, available } = await load()
+    return available ? content.resources : null
   },
 }

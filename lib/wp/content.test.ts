@@ -151,7 +151,7 @@ describe('contacts', () => {
 describe('malformed input', () => {
   it('returns empty content', () => {
     for (const input of ['text', [], null, 42, {}, { avisos: 'x', contactos: {}, alerta: 'x' }]) {
-      assert.deepEqual(toContent(input, NOW), { alert: null, notices: [], upcoming: [], contacts: [], committee: [], points: [] })
+      assert.deepEqual(toContent(input, NOW), { alert: null, notices: [], upcoming: [], contacts: [], committee: [], points: [], resources: [] })
     }
   })
 })
@@ -217,5 +217,75 @@ describe('map points', () => {
     assert.deepEqual(points.map((p) => p.id), ['wp-1', 'wp-2'])
     assert.ok(points[1].position.x > points[0].position.x)
     assert.ok(points[1].position.y < points[0].position.y)
+  })
+})
+
+describe('resources', () => {
+  const pdf = (overrides: Record<string, unknown> = {}) => ({
+    id: 7,
+    titulo: 'Guía',
+    descripcion: 'Qué hacer',
+    url: 'https://jacelcastillo.com.co/wp-content/uploads/2026/11/guia.pdf',
+    tamano: 245760,
+    formato: 'pdf',
+    ...overrides,
+  })
+  const resourcesOf = (recursos: unknown[]) => toContent({ recursos }, NOW).resources
+
+  it('is empty when recursos is missing', () => {
+    assert.deepEqual(toContent({}, NOW).resources, [])
+  })
+
+  it('maps a valid resource', () => {
+    assert.deepEqual(resourcesOf([pdf()]), [
+      {
+        id: 'wp-7',
+        title: 'Guía',
+        description: 'Qué hacer',
+        href: 'https://jacelcastillo.com.co/wp-content/uploads/2026/11/guia.pdf',
+        sizeBytes: 245760,
+        format: 'pdf',
+      },
+    ])
+  })
+
+  it('keeps the WordPress order', () => {
+    assert.deepEqual(resourcesOf([pdf({ id: 2, titulo: 'B' }), pdf({ id: 1, titulo: 'A' })]).map((r) => r.title), ['B', 'A'])
+  })
+
+  it('accepts every format with a matching extension', () => {
+    const cases = [
+      ['word', 'a.docx'],
+      ['word', 'a.DOC'],
+      ['excel', 'a.xlsx'],
+      ['powerpoint', 'a.pptx'],
+      ['imagen', 'a.webp'],
+      ['imagen', 'a.jpg'],
+    ]
+    for (const [formato, file] of cases) {
+      const url = `https://jacelcastillo.com.co/wp-content/uploads/${file}`
+      assert.equal(resourcesOf([pdf({ formato, url })]).length, 1, `${formato} ${file}`)
+    }
+  })
+
+  it('drops resources without a title or with an unknown format', () => {
+    assert.equal(resourcesOf([pdf({ titulo: '  ' }), pdf({ formato: 'txt' }), pdf({ formato: undefined }), pdf({ id: null })]).length, 0)
+  })
+
+  it('drops invalid links', () => {
+    const bad = [
+      'javascript:alert(1)',
+      'ftp://jacelcastillo.com.co/wp-content/uploads/guia.pdf',
+      'https://jacelcastillo.com.co/otra-ruta/guia.pdf',
+      'https://jacelcastillo.com.co/wp-content/uploads/guia.exe',
+      'https://jacelcastillo.com.co/wp-content/uploads/guia.docx',
+      'no es un enlace',
+      '',
+    ]
+    for (const url of bad) assert.equal(resourcesOf([pdf({ url })]).length, 0, url)
+  })
+
+  it('drops invalid sizes', () => {
+    for (const tamano of [0, -5, 1.5, '240', null, undefined]) assert.equal(resourcesOf([pdf({ tamano })]).length, 0, String(tamano))
   })
 })

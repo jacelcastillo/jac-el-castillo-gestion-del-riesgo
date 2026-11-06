@@ -38,6 +38,8 @@ export const uiCopy = {
     preparedIntro: 'Haz el plan familiar y arma tu kit de emergencia.',
     mapTitle: 'Mapa comunitario',
     mapOpen: 'Abrir el mapa',
+    resourcesTitle: 'Recursos',
+    resourcesOpen: 'Ver los recursos',
   },
   alert: {
     currentLabel: 'Estado de alerta actual',
@@ -62,6 +64,13 @@ export const uiCopy = {
     legendTitle: 'Convenciones',
     listTitle: 'Listado de puntos',
     reference: 'Referencia',
+  },
+  resources: {
+    offlineHint: 'Para usarlos sin señal, descárgalos en tu celular.',
+    empty: 'Todavía no hay recursos publicados.',
+    unavailable: 'No pudimos cargar los recursos. Intenta más tarde.',
+    listLabel: 'Lista de recursos',
+    opensInNewTab: '(se abre en una pestaña nueva)',
   },
   prepare: {
     planTitle: 'Plan familiar de emergencia',

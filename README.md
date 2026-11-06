@@ -22,7 +22,7 @@ En Vercel el sitio necesita `WP_URL`, `WP_APP_USER` y `WP_APP_PASSWORD` (esta ú
 
 Para revisar producción sin escribir nada: `node scripts/check-wp.mjs https://jacelcastillo.com.co --prod`.
 
-El sitio funciona sin señal después de la primera visita: el celular guarda el inicio, Aprende, Reportar, Contactos, Avisos, Mis reportes, Prepárate, Sobre la JAC, la privacidad, el mapa comunitario (si hay puntos) y cada riesgo (lista en `lib/precache.ts`). Lo que no está guardado muestra la página "Sin conexión". Cada despliegue trae una versión nueva (`VERCEL_GIT_COMMIT_SHA`) y el celular reemplaza su copia guardada al abrir el sitio con señal.
+El sitio funciona sin señal después de la primera visita: el celular guarda el inicio, Aprende, Reportar, Contactos, Avisos, Mis reportes, Prepárate, Sobre la JAC, la privacidad, el mapa comunitario (si hay puntos), Recursos y cada riesgo (lista en `lib/precache.ts`). Lo que no está guardado muestra la página "Sin conexión". Cada despliegue trae una versión nueva (`VERCEL_GIT_COMMIT_SHA`) y el celular reemplaza su copia guardada al abrir el sitio con señal.
 
 ## Cómo opera la Junta en wp-admin
 
@@ -41,6 +41,8 @@ Todo se hace desde wp-admin, en el WordPress de la JAC. Los cambios llegan al si
 - Desde la oficina, abre Google Maps, deja presionado el lugar y copia los números que aparecen (por ejemplo 4.6097, -74.0817). Pégalos en Coordenadas, un par por línea.
 
 El mapa solo aparece en el sitio cuando hay al menos un punto publicado.
+
+**Subir un recurso.** Recursos de riesgo, Añadir nuevo. Escribe el título (es el nombre que se muestra) y la descripción, toca Elegir o subir archivo y elige el documento de la Biblioteca de medios o súbelo desde el celular o el computador. Los formatos permitidos son PDF, Word, Excel, PowerPoint e imágenes (JPG, PNG o WebP). Define el orden con el campo Orden de la caja Atributos y toca Publicar. Un recurso sin archivo, o con un formato no permitido, no aparece en el sitio; la lista de wp-admin dice "Sin archivo" en su columna Archivo. Lo que es solo para leer va mejor en PDF; usa Excel o Word para lo que el vecino debe llenar. Si WordPress rechaza el archivo por su tamaño, hay que comprimirlo. En el sitio, el PDF y la imagen se abren en otra pestaña y los archivos de Office se descargan. La lista se ve sin señal, pero el archivo no: quien lo necesite sin señal debe descargarlo antes.
 
 **Subir una versión nueva del plugin.** Plugins, Añadir nuevo, Subir plugin. Elige el archivo `jac-el-castillo-gestion-del-riesgo.zip` y toca Instalar ahora. WordPress avisa que el plugin ya existe: toca "Reemplazar el actual con el subido". No hace falta activarlo otra vez.
 
