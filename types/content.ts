@@ -108,6 +108,8 @@ export interface MapPoint {
   position: { x: number; y: number }
   /** Solo rutas: trazado en porcentaje dentro del croquis. */
   path?: Array<{ x: number; y: number }>
+  /** Lugar real del punto; en una ruta, su primer vértice. */
+  target: { lat: number; lng: number }
 }
 
 export interface MapPointKindDefinition {

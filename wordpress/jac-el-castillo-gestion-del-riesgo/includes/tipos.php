@@ -6,6 +6,7 @@ const GR_TIPOS_PUNTO = ['encuentro', 'ruta', 'riesgo'];
 
 add_action('init', 'gr_registrar_tipos');
 add_action('add_meta_boxes', 'gr_agregar_cajas_tipos');
+add_action('admin_enqueue_scripts', 'gr_cargar_ubicacion_punto');
 add_action('save_post_gr_contacto', 'gr_guardar_contacto');
 add_action('save_post_gr_punto', 'gr_guardar_punto');
 
@@ -46,6 +47,19 @@ function gr_registrar_tipos(): void {
     $registrar('gr_punto', 'gr_descripcion', static fn($v): string => gr_parrafo($v, 300));
     $registrar('gr_punto', 'gr_referencia', static fn($v): string => gr_texto($v, 120));
     $registrar('gr_punto', 'gr_coordenadas', 'gr_coordenadas');
+}
+
+function gr_cargar_ubicacion_punto(string $pantalla): void {
+    if (!in_array($pantalla, ['post.php', 'post-new.php'], true) || get_current_screen()?->post_type !== 'gr_punto') {
+        return;
+    }
+    wp_enqueue_script(
+        'gr-ubicacion-punto',
+        plugins_url('assets/ubicacion-punto.js', dirname(__DIR__) . '/jac-el-castillo-gestion-del-riesgo.php'),
+        [],
+        GR_VERSION,
+        true
+    );
 }
 
 function gr_agregar_cajas_tipos(): void {
@@ -107,7 +121,11 @@ function gr_pintar_caja_punto(WP_Post $post): void {
     <p>
         <label for="gr_coordenadas"><strong>Coordenadas</strong></label><br>
         <textarea id="gr_coordenadas" name="gr_coordenadas" class="large-text code" rows="5"><?php echo esc_textarea((string) get_post_meta($post->ID, 'gr_coordenadas', true)); ?></textarea>
-        <span class="description">Un par latitud,longitud por línea. Por ejemplo: 4.6097,-74.0817. Las líneas que no sean válidas se descartan.</span>
+        <span class="description">Un par latitud,longitud por línea. Por ejemplo: 4.6097,-74.0817. Las líneas que no sean válidas se descartan. Estando en el lugar, usa el botón Agregar mi ubicación.</span>
+    </p>
+    <p>
+        <button type="button" class="button" id="gr_agregar_ubicacion">Agregar mi ubicación</button>
+        <span id="gr_ubicacion_estado" class="description" aria-live="polite"></span>
     </p>
     <?php
 }

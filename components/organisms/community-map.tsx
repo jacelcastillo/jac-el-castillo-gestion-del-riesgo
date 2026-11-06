@@ -13,7 +13,7 @@ const toneByKind: Record<MapPoint['kind'], IconBadgeTone> = {
   riesgo: 'warning',
 }
 
-/** Croquis ilustrativo (placeholder) + listado accesible de los mismos puntos. */
+/** Croquis con las posiciones relativas de los puntos + listado accesible de los mismos. */
 export function CommunityMap({ points }: { points: MapPoint[] }) {
   const numbered = points.map((point, index) => ({ point, number: index + 1 }))
   const routes = points.filter((point) => point.path && point.path.length > 1)
@@ -22,7 +22,7 @@ export function CommunityMap({ points }: { points: MapPoint[] }) {
     <div className="flex flex-col gap-6">
       <figure className="flex flex-col gap-3">
         <div
-          className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border-2 border-border bg-muted md:aspect-[16/9]"
+          className="relative mx-auto aspect-square w-full max-w-xl overflow-hidden rounded-2xl border-2 border-border bg-muted"
           aria-hidden="true"
         >
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
@@ -32,8 +32,6 @@ export function CommunityMap({ points }: { points: MapPoint[] }) {
               </pattern>
             </defs>
             <rect width="100" height="100" fill="url(#grid)" />
-            <path d="M0 78 C 25 70, 45 88, 70 76 S 100 70, 100 70" fill="none" className="stroke-primary/40" strokeWidth="3" />
-            <path d="M10 0 L 22 100 M 0 40 L 100 48 M 60 0 L 72 100" fill="none" className="stroke-card" strokeWidth="2.5" />
             {routes.map((route) => (
               <polyline
                 key={route.id}
@@ -59,7 +57,7 @@ export function CommunityMap({ points }: { points: MapPoint[] }) {
         </div>
         <figcaption className="flex items-start gap-2 text-base text-muted-foreground">
           <Info aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
-          {uiCopy.map.placeholderNotice}
+          {uiCopy.map.sketchNotice}
         </figcaption>
       </figure>
 

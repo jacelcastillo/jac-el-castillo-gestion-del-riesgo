@@ -1,7 +1,7 @@
 import { risks } from '../config/risks.ts'
 import { bottomNavigation, mainNavigation } from '../config/site.ts'
 
-const EXTRA_PAGES = ['/riesgos', '/preparate', '/avisos', '/sobre-la-jac', '/mis-reportes', '/privacidad', '/offline']
+const EXTRA_PAGES = ['/riesgos', '/mapa', '/preparate', '/avisos', '/sobre-la-jac', '/mis-reportes', '/privacidad', '/offline']
 
 export function precachePaths(): string[] {
   const paths = [

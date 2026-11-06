@@ -151,7 +151,71 @@ describe('contacts', () => {
 describe('malformed input', () => {
   it('returns empty content', () => {
     for (const input of ['text', [], null, 42, {}, { avisos: 'x', contactos: {}, alerta: 'x' }]) {
-      assert.deepEqual(toContent(input, NOW), { alert: null, notices: [], upcoming: [], contacts: [], committee: [] })
+      assert.deepEqual(toContent(input, NOW), { alert: null, notices: [], upcoming: [], contacts: [], committee: [], points: [] })
     }
+  })
+})
+
+function punto(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 20,
+    tipo: 'encuentro',
+    nombre: 'Cancha',
+    descripcion: 'D',
+    referencia: 'R',
+    coordenadas: [[4.608, -74.0808]],
+    ...overrides,
+  }
+}
+
+const pointsOf = (puntos: unknown[]) => toContent({ puntos }, NOW).points
+
+describe('map points', () => {
+  it('is empty when puntos is missing or not a list', () => {
+    assert.deepEqual(toContent({}, NOW).points, [])
+    assert.deepEqual(toContent({ puntos: 'x' }, NOW).points, [])
+  })
+
+  it('maps a meeting point to the center with its real target', () => {
+    const [point] = pointsOf([punto()])
+    assert.equal(point.id, 'wp-20')
+    assert.equal(point.kind, 'encuentro')
+    assert.deepEqual(point.position, { x: 50, y: 50 })
+    assert.deepEqual(point.target, { lat: 4.608, lng: -74.0808 })
+    assert.equal(point.path, undefined)
+  })
+
+  it('draws a route with all its vertices and targets the first one', () => {
+    const [route] = pointsOf([
+      punto({ tipo: 'ruta', coordenadas: [[4.59, -74.09], [4.6, -74.085], [4.61, -74.08]] }),
+    ])
+    assert.equal(route.path?.length, 3)
+    assert.deepEqual(route.position, route.path?.[0])
+    assert.deepEqual(route.target, { lat: 4.59, lng: -74.09 })
+  })
+
+  it('drops invalid vertices, and points left without any', () => {
+    const points = pointsOf([
+      punto({ id: 1, coordenadas: [[4.6, -74.08], ['x', 1], [91, 0], [0, 181], [1], null, [Number.NaN, 1]] }),
+      punto({ id: 2, coordenadas: [] }),
+      punto({ id: 3, coordenadas: 'nada' }),
+      punto({ id: 4, coordenadas: [[200, 0]] }),
+    ])
+    assert.deepEqual(points.map((p) => p.id), ['wp-1'])
+  })
+
+  it('drops points with an unknown kind, no name or no id', () => {
+    const points = pointsOf([punto({ tipo: 'otro' }), punto({ nombre: ' ' }), punto({ id: null }), punto({ id: 9 })])
+    assert.deepEqual(points.map((p) => p.id), ['wp-9'])
+  })
+
+  it('keeps one projection for all points and the input order', () => {
+    const points = pointsOf([
+      punto({ id: 1, coordenadas: [[4.6, -74.1]] }),
+      punto({ id: 2, tipo: 'riesgo', coordenadas: [[4.7, -74.0]] }),
+    ])
+    assert.deepEqual(points.map((p) => p.id), ['wp-1', 'wp-2'])
+    assert.ok(points[1].position.x > points[0].position.x)
+    assert.ok(points[1].position.y < points[0].position.y)
   })
 })

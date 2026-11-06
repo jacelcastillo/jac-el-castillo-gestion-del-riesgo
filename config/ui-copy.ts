@@ -30,11 +30,14 @@ export const uiCopy = {
     kitProgressLabel: 'Tu kit de emergencia',
     kitOf: 'de',
     kitContinue: 'Seguir',
+    mapTitle: 'Mapa comunitario',
   },
   learn: {
     risksTitle: 'Conoce tus riesgos',
     preparedTitle: 'Prepárate en familia',
     preparedIntro: 'Haz el plan familiar y arma tu kit de emergencia.',
+    mapTitle: 'Mapa comunitario',
+    mapOpen: 'Abrir el mapa',
   },
   alert: {
     currentLabel: 'Estado de alerta actual',
@@ -51,8 +54,11 @@ export const uiCopy = {
     whereInSector: 'Dónde se presenta en el sector',
   },
   map: {
-    placeholderNotice:
-      'Croquis de referencia. El mapa interactivo con ubicación real se activará pronto.',
+    sketchNotice: 'Croquis con las posiciones reales de los puntos. No es un mapa a escala.',
+    unavailable: 'No pudimos cargar el mapa. Si ves peligro, llama al 123.',
+    directions: 'Cómo llegar',
+    viewOnGoogleMaps: 'Ver en Google Maps',
+    opensInNewTab: '(se abre en una pestaña nueva)',
     legendTitle: 'Convenciones',
     listTitle: 'Listado de puntos',
     reference: 'Referencia',

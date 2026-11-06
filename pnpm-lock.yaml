@@ -38,9 +38,6 @@ importers:
       react-hook-form:
         specifier: ^7.91.0
         version: 7.91.0(@types/react@19.2.14)(react@19.2.4)
-      shadcn:
-        specifier: ^4.11.0
-        version: 4.19.0(supports-color@7.2.0)(typescript@5.7.3)
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.4.0
@@ -72,6 +69,9 @@ importers:
       postcss:
         specifier: ^8.5
         version: 8.5.32
+      shadcn:
+        specifier: ^4.11.0
+        version: 4.19.0(supports-color@7.2.0)(typescript@5.7.3)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3

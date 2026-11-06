@@ -226,6 +226,22 @@ async function revisarLocal() {
   const fotos030 = wp('eval', `${carpetaFotos030} echo json_encode([is_dir($c), file_exists($c . "/.htaccess"), file_exists($c . "/index.php")]);`)
   check('migración 0.3.0: crea la carpeta de fotos con .htaccess e index.php', fotos030.out.endsWith('[true,true,true]'), fotos030.out || fotos030.err)
 
+  wp('option', 'update', 'gr_version', '0.3.0')
+  const version040 = wp('option', 'get', 'gr_version')
+  check('migración 0.4.0: gr_version pasa de 0.3.0 a 0.4.0', version040.ok && version040.out.endsWith('0.4.0'), version040.out || version040.err)
+
+  const { cookie } = await iniciarSesionAdmin()
+  const pantallaPunto = await fetch(`${base}/wp-admin/post-new.php?post_type=gr_punto`, { headers: { cookie } }).then((r) => r.text())
+  check(
+    'wp-admin: la pantalla de punto tiene el botón Agregar mi ubicación y su línea de estado',
+    /<button[^>]*type="button"[^>]*id="gr_agregar_ubicacion"[^>]*>Agregar mi ubicación<\/button>/.test(pantallaPunto) && /id="gr_ubicacion_estado"[^>]*aria-live="polite"/.test(pantallaPunto),
+  )
+  check('wp-admin: la pantalla de punto carga ubicacion-punto.js con la versión del plugin', /assets\/ubicacion-punto\.js\?ver=0\.4\.0/.test(pantallaPunto))
+  const pantallaContacto = await fetch(`${base}/wp-admin/post-new.php?post_type=gr_contacto`, { headers: { cookie } }).then((r) => r.text())
+  check('wp-admin: ubicacion-punto.js no se carga en otras pantallas', !pantallaContacto.includes('ubicacion-punto.js'))
+  const js = await fetch(`${base}/wp-content/plugins/jac-el-castillo-gestion-del-riesgo/assets/ubicacion-punto.js`)
+  check('ubicacion-punto.js se sirve como JavaScript', js.status === 200 && (js.headers.get('content-type') ?? '').includes('javascript'), `${js.status} ${js.headers.get('content-type')}`)
+
   const visibles = wp('post', 'list', '--category_name=gestion-del-riesgo', '--post_status=publish', '--format=count')
   check('WP-CLI sigue viendo las entradas de riesgo', visibles.ok && Number(visibles.out) > 0, visibles.out || visibles.err)
   const repetidas = wp('db', 'query', "SELECT meta_value FROM wp_postmeta WHERE meta_key = 'gr_prueba' GROUP BY meta_value HAVING COUNT(*) > 1", '--skip-column-names')
@@ -233,6 +249,20 @@ async function revisarLocal() {
 
   console.log(`${fallos ? 'FAIL' : 'OK'} ${fallos} fallos`)
   process.exit(fallos ? 1 : 0)
+}
+
+async function iniciarSesionAdmin() {
+  const entrar = () =>
+    fetch(`${base}/wp-login.php`, {
+      method: 'POST',
+      redirect: 'manual',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: 'wordpress_test_cookie=WP Cookie check' },
+      body: new URLSearchParams({ log: 'admin', pwd: 'admin-local', 'wp-submit': 'Log In' }),
+    })
+  // Tras llamadas largas a WP-CLI, Apache ya cerró la conexión reutilizada.
+  const login = await entrar().catch(entrar)
+  const cookie = login.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ')
+  return { login, cookie }
 }
 
 function json(cuerpo) {
@@ -377,13 +407,7 @@ async function revisarReportes() {
     const sinSesion = await fetch(`${base}/wp-admin/admin-post.php?action=gr_foto&id=${idPostFoto}`)
     check('admin-post gr_foto sin sesión: 403 y no es imagen', sinSesion.status === 403 && !(sinSesion.headers.get('content-type') ?? '').startsWith('image/'), `${sinSesion.status} ${sinSesion.headers.get('content-type')}`)
 
-    const login = await fetch(`${base}/wp-login.php`, {
-      method: 'POST',
-      redirect: 'manual',
-      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: 'wordpress_test_cookie=WP Cookie check' },
-      body: new URLSearchParams({ log: 'admin', pwd: 'admin-local', 'wp-submit': 'Log In' }),
-    })
-    const cookie = login.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ')
+    const { login, cookie } = await iniciarSesionAdmin()
     const edicion = await fetch(`${base}/wp-admin/post.php?post=${idPostFoto}&action=edit`, { headers: { cookie } })
     const html = await edicion.text()
     const cajaDatos = html.slice(html.indexOf('Datos del reporte'))

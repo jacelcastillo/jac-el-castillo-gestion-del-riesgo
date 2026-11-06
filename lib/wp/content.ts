@@ -5,9 +5,12 @@ import type {
   AlertStatus,
   CommitteeMember,
   Contact,
+  MapPoint,
+  MapPointKind,
   Notice,
   NoticeKind,
 } from '../../types/content.ts'
+import { project, type LatLng } from '../map.ts'
 
 export interface Content {
   alert: AlertStatus | null
@@ -15,6 +18,7 @@ export interface Content {
   upcoming: Notice[]
   contacts: Contact[]
   committee: CommitteeMember[]
+  points: MapPoint[]
 }
 
 export interface Sortable {
@@ -24,6 +28,7 @@ export interface Sortable {
 
 const ALERT_LEVELS: readonly string[] = ['verde', 'amarilla', 'naranja', 'roja']
 const NOTICE_KINDS: readonly string[] = ['comunicado', 'simulacro', 'taller']
+const POINT_KINDS: readonly string[] = ['encuentro', 'ruta', 'riesgo']
 const MIN_PHONE_DIGITS = 7
 
 const dayFormatter = new Intl.DateTimeFormat('en-CA', {
@@ -151,6 +156,64 @@ function toPhone(display: string): string | null {
   return display.startsWith('+') ? `+${digits}` : digits
 }
 
+function toVertices(value: unknown): LatLng[] {
+  if (!Array.isArray(value)) return []
+  return value.flatMap((pair): LatLng[] => {
+    if (!Array.isArray(pair) || pair.length !== 2) return []
+    const [lat, lng] = pair
+    if (typeof lat !== 'number' || typeof lng !== 'number') return []
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return []
+    if (Math.abs(lat) > 90 || Math.abs(lng) > 180) return []
+    return [{ lat, lng }]
+  })
+}
+
+interface RawPoint {
+  id: string
+  kind: MapPointKind
+  name: string
+  description: string
+  reference: string
+  vertices: LatLng[]
+}
+
+function toPoints(values: Record<string, unknown>[]): MapPoint[] {
+  const raws = values.flatMap((raw): RawPoint[] => {
+    const id = toId(raw.id)
+    const kind = text(raw.tipo)
+    const name = text(raw.nombre)
+    const vertices = toVertices(raw.coordenadas)
+    if (id === null || name === '' || !POINT_KINDS.includes(kind) || vertices.length === 0) return []
+    return [
+      {
+        id: `wp-${id}`,
+        kind: kind as MapPointKind,
+        name,
+        description: text(raw.descripcion),
+        reference: text(raw.referencia),
+        vertices,
+      },
+    ]
+  })
+
+  const projected = project(raws.flatMap((raw) => raw.vertices))
+  let cursor = 0
+  return raws.map((raw) => {
+    const path = projected.slice(cursor, cursor + raw.vertices.length)
+    cursor += raw.vertices.length
+    return {
+      id: raw.id,
+      kind: raw.kind,
+      name: raw.name,
+      description: raw.description,
+      reference: raw.reference,
+      position: path[0],
+      path: raw.kind === 'ruta' && path.length > 1 ? path : undefined,
+      target: raw.vertices[0],
+    }
+  })
+}
+
 export function toContent(json: unknown, now: Date = new Date()): Content {
   const root = isRecord(json) ? json : {}
   const contacts: Contact[] = []
@@ -192,5 +255,5 @@ export function toContent(json: unknown, now: Date = new Date()): Content {
   const notices = sorted.map((entry) => entry.notice)
   const upcoming = sorted.filter((entry) => entry.eventAt !== null && entry.eventAt >= now.getTime()).map((entry) => entry.notice)
 
-  return { alert: toAlert(root.alerta), notices, upcoming, contacts, committee }
+  return { alert: toAlert(root.alerta), notices, upcoming, contacts, committee, points: toPoints(list(root.puntos)) }
 }

@@ -17,9 +17,10 @@ interface HomeTemplateProps {
   notices: Notice[]
   contacts: Contact[]
   committee: CommitteeMember[]
+  hasMap: boolean
 }
 
-export function HomeTemplate({ alert, notices, contacts, committee }: HomeTemplateProps) {
+export function HomeTemplate({ alert, notices, contacts, committee, hasMap }: HomeTemplateProps) {
   return (
     <div className="flex flex-col gap-10">
       <LandingHero copy={pageCopy.home} alert={alert} phones={contacts.slice(1, FEATURED_CONTACTS)} />
@@ -32,6 +33,16 @@ export function HomeTemplate({ alert, notices, contacts, committee }: HomeTempla
       >
         <RiskGrid risks={risks} />
       </LandingSection>
+      {hasMap && (
+        <LandingSection
+          id="mapa"
+          title={uiCopy.home.mapTitle}
+          icon="map"
+          seeAll={{ href: '/mapa', label: uiCopy.home.seeAll }}
+        >
+          <p className="text-base leading-relaxed text-muted-foreground">{pageCopy.map.intro}</p>
+        </LandingSection>
+      )}
       <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
         <LandingSection id="preparado" title={uiCopy.home.preparedTitle} icon="backpack">
           <KitProgress />

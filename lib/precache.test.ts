@@ -11,6 +11,10 @@ describe('precachePaths', () => {
     for (const risk of risks) assert.ok(paths.includes(`/riesgos/${risk.slug}`))
   })
 
+  it('includes the community map', () => {
+    assert.ok(paths.includes('/mapa'))
+  })
+
   it('has no duplicates', () => {
     assert.equal(new Set(paths).size, paths.length)
   })

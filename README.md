@@ -22,4 +22,26 @@ En Vercel el sitio necesita `WP_URL`, `WP_APP_USER` y `WP_APP_PASSWORD` (esta ú
 
 Para revisar producción sin escribir nada: `node scripts/check-wp.mjs https://jacelcastillo.com.co --prod`.
 
-El sitio funciona sin señal después de la primera visita: el celular guarda el inicio, Aprende, Reportar, Contactos, Avisos, Mis reportes, Prepárate, Sobre la JAC, la privacidad y cada riesgo (lista en `lib/precache.ts`). Lo que no está guardado muestra la página "Sin conexión". Cada despliegue trae una versión nueva (`VERCEL_GIT_COMMIT_SHA`) y el celular reemplaza su copia guardada al abrir el sitio con señal.
+El sitio funciona sin señal después de la primera visita: el celular guarda el inicio, Aprende, Reportar, Contactos, Avisos, Mis reportes, Prepárate, Sobre la JAC, la privacidad, el mapa comunitario (si hay puntos) y cada riesgo (lista en `lib/precache.ts`). Lo que no está guardado muestra la página "Sin conexión". Cada despliegue trae una versión nueva (`VERCEL_GIT_COMMIT_SHA`) y el celular reemplaza su copia guardada al abrir el sitio con señal.
+
+## Cómo opera la Junta en wp-admin
+
+Todo se hace desde wp-admin, en el WordPress de la JAC. Los cambios llegan al sitio en menos de un minuto.
+
+**Publicar un aviso.** Entradas, Añadir nueva. Elige la categoría Gestión del riesgo, escribe el título y llena el Extracto: es el resumen que se ve en el sitio. Si es un simulacro o un taller, llena la caja Evento (tipo, fecha, hora y lugar). Publica.
+
+**Cambiar la alerta.** Ajustes, Gestión del riesgo. Cambia el nivel, el título y la descripción, y guarda.
+
+**Atender reportes.** Reportes de riesgo. Abre el reporte para ver la descripción, la ubicación y la foto. Cambia el estado cuando lo atiendan: quien reportó lo ve en Mis reportes. Cada reporte nuevo también llega por correo al correo de avisos (Ajustes, Gestión del riesgo), sin la foto: la foto solo se ve dentro del reporte.
+
+**Cargar contactos.** Contactos de riesgo, Añadir nuevo. El título es el nombre. Elige el grupo (Junta, Líder de sector o Comité), el cargo, el sector y el teléfono. El campo Orden de la caja Atributos define quién va primero.
+
+**Cargar puntos del mapa.** Puntos del mapa, Añadir nuevo. Escribe el nombre, elige el tipo (punto de encuentro, ruta de evacuación o zona de riesgo), la descripción y una referencia. Para las coordenadas hay dos caminos:
+- Estando en el lugar, toca Agregar mi ubicación y permite la ubicación en el navegador. En un punto de encuentro o una zona de riesgo basta un toque. En una ruta, toca una vez en cada curva, caminando de principio a fin: cada toque agrega una línea. Si dice que la precisión es baja, espera un momento, sal a cielo abierto y toca de nuevo.
+- Desde la oficina, abre Google Maps, deja presionado el lugar y copia los números que aparecen (por ejemplo 4.6097, -74.0817). Pégalos en Coordenadas, un par por línea.
+
+El mapa solo aparece en el sitio cuando hay al menos un punto publicado.
+
+**Subir una versión nueva del plugin.** Plugins, Añadir nuevo, Subir plugin. Elige el archivo `jac-el-castillo-gestion-del-riesgo.zip` y toca Instalar ahora. WordPress avisa que el plugin ya existe: toca "Reemplazar el actual con el subido". No hace falta activarlo otra vez.
+
+Para quien desarrolla: `pnpm check-urls <url>` revisa las páginas, los encabezados de seguridad y las rutas de la API de un despliegue sin enviar ningún reporte (por defecto http://localhost:3200).
